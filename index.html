@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop - Dynamic Stack Layers & PDF</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html2pdf.js Library untuk Cetak PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        .dragging {
+            opacity: 0.3;
+        }
+        /* Kustomisasi scrollbar agar lebih rapi */
+        #layers-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+        #layers-wrapper::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-blue-50 overflow-hidden select-none">
+
+    <main id="main-container" class="w-full h-screen relative">
+
+        <!-- SVG UNTUK TALI CRANE -->
+        <svg id="crane-svg" class="absolute inset-0 w-full h-full pointer-events-none z-30">
+            <line id="rope-left" x1="0" y1="0" x2="0" y2="0" stroke="#1f2937" stroke-width="4" class="hidden" />
+            <line id="rope-right" x1="0" y1="0" x2="0" y2="0" stroke="#1f2937" stroke-width="4" class="hidden" />
+        </svg>
+
+        <!-- CRANE BRIDGE & TROLLY -->
+        <div id="crane-bridge" class="absolute top-2 left-0 right-0 h-[3rem] mx-7 flex items-center px-4 border-2 border-amber-600 bg-amber-500 rounded shadow-md z-30 pointer-events-none">
+            <div id="crane-trolley" class="absolute left-1/2 -translate-x-1/2 w-16 h-8 bg-gray-900 rounded border-2 border-amber-400 flex flex-col items-center justify-center text-amber-400 font-bold text-[10px] shadow transition-transform duration-75 ease-out">
+                <span>CRANE</span>
+                <div class="w-2 h-2 bg-amber-500 rounded-full mt-0.5"></div>
+            </div>
+        </div>
+
+        <!-- SPREADER / HOOK BAWAH -->
+        <div id="crane-hook" class="absolute w-24 h-4 bg-amber-500 rounded border-2 border-gray-900 z-30 pointer-events-none hidden flex items-center justify-center shadow-lg">
+            <span class="text-[9px] font-bold text-white tracking-widest">SPREADER</span>
+        </div>
+
+        <!-- ASIDE: Tempat Asal Kontainer -->
+        <aside id="sidebar-container" class="drop-zone absolute p-4 w-[17rem] flex flex-col gap-4 top-[4.5rem] right-4 bottom-[3rem] border-2 border-gray-300 bg-white shadow-xl rounded-lg overflow-y-auto z-20">
+            <h4 class="font-bold text-gray-700 text-sm mb-1 pointer-events-none">Yard (Kontainer):</h4>
+            
+            <div draggable="true" id="item-1" class="draggable-item w-full border-2 border-red-800 bg-red-600 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-red-700">
+                <span>CONTAINER 01</span>
+                <span class="text-[10px] font-normal opacity-80">40ft - Dry</span>
+            </div>
+            <div draggable="true" id="item-2" class="draggable-item w-full border-2 border-orange-800 bg-orange-600 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-orange-700">
+                <span>CONTAINER 02</span>
+                <span class="text-[10px] font-normal opacity-80">20ft - Dry</span>
+            </div>
+            <div draggable="true" id="item-3" class="draggable-item w-full border-2 border-blue-900 bg-blue-700 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-blue-800">
+                <span>CONTAINER 03</span>
+                <span class="text-[10px] font-normal opacity-80">40ft - HC</span>
+            </div>
+        </aside>
+
+        <!-- KOTAK UTAMA (Area Kapal / Drop Zones) -->
+        <div id="pdf-source-area" class="absolute p-6 flex flex-col gap-4 border-2 border-gray-300 top-[4.5rem] left-7 w-[77%] bottom-[3rem] bg-white rounded-lg shadow-sm z-10">
+            
+            <!-- Header & Tombol Aksi -->
+            <div class="flex justify-between items-center border-b pb-3 shrink-0" id="report-header">
+                <div>
+                    <h2 class="font-bold text-gray-800 text-lg">Laporan Posisi Kontainer (Bay Plan)</h2>
+                    <p class="text-xs text-gray-500">Lotus Prakasa Lines (LPL) Operational Terminal</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="addLayer()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center cursor-pointer">
+                        ➕ Tambah Lapisan (Stack)
+                    </button>
+                    <button onclick="openPreview()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center gap-1 cursor-pointer">
+                        🔍 Pratinjau & Cetak PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Wadah Lapisan -->
+            <div id="layers-wrapper" class="flex flex-col gap-8 flex-1 overflow-y-auto p-2">
+                <!-- Lapisan baru (Bottom, Stack 1, Stack 2) akan di-generate oleh JS ke sini -->
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL PRATINJAU (PREVIEW) LAPORAN PDF -->
+    <div id="preview-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl w-[90%] max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- Header Modal -->
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 shrink-0">
+                <h3 class="font-bold text-gray-800 text-base">Pratinjau Dokumen PDF (Bay Plan)</h3>
+                <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 font-bold text-lg cursor-pointer">&times;</button>
+            </div>
+            <!-- Konten Pratinjau -->
+            <div class="p-6 overflow-y-auto bg-gray-100 flex-1">
+                <div id="pdf-preview-content">
+                    <!-- Data akan di-generate secara dinamis ke sini -->
+                </div>
+            </div>
+            <!-- Footer Modal -->
+            <div class="p-4 border-t flex justify-end gap-2 bg-gray-50 shrink-0 z-10 relative">
+                <button onclick="closePreview()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold px-4 py-2 rounded transition cursor-pointer">Batal</button>
+                <button onclick="downloadPDF()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center gap-1 cursor-pointer">
+                    📥 Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIKA JAVASCRIPT -->
+    <script>
+        const draggables = document.querySelectorAll('.draggable-item');
+        const sidebar = document.getElementById('sidebar-container');
+        const craneBridge = document.getElementById('crane-bridge');
+        const craneTrolley = document.getElementById('crane-trolley');
+        const mainContainer = document.getElementById('main-container');
+        
+        const ropeLeft = document.getElementById('rope-left');
+        const ropeRight = document.getElementById('rope-right');
+        const craneHook = document.getElementById('crane-hook');
+
+        let isDragging = false;
+        let layerCount = 0;
+        let slotCounter = 1;
+
+        // FUNGSI MEMBUAT LAPISAN (STACK) BARU
+        function addLayer() {
+            const wrapper = document.getElementById('layers-wrapper');
+            const layerName = layerCount === 0 ? 'Bottom Layer' : `Stack Layer ${layerCount}`;
+            layerCount++;
+
+            const layerDiv = document.createElement('div');
+            layerDiv.className = 'layer-block flex flex-col gap-4 border border-gray-200 p-4 bg-gray-50 rounded-lg shadow-sm shrink-0';
+
+            let gridHTML = `
+                <div class="border-b-2 border-gray-300 pb-2 flex items-center">
+                    <span class="bg-gray-800 text-white text-xs font-bold px-3 py-1 rounded tracking-widest">${layerName.toUpperCase()}</span>
+                </div>
+                <div class="flex gap-6 justify-between w-full">
+            `;
+
+            for(let col = 0; col < 2; col++) {
+                gridHTML += `<div class="border-2 border-gray-200 bg-gray-100 p-4 flex-1 flex flex-col gap-4 justify-between rounded">`;
+                for(let row = 0; row < 3; row++) {
+                    gridHTML += `<div class="border-2 border-dashed border-gray-400 bg-white flex flex-1 rounded transition p-2 gap-2">`;
+                    for(let slot = 0; slot < 3; slot++) {
+                        gridHTML += `<div class="drop-zone border-2 border-gray-200 flex-1 flex justify-center items-center rounded bg-gray-50 transition min-h-[4.5rem]">
+                            <span class="text-gray-400 text-xs pointer-events-none">Slot ${slotCounter++}</span>
+                        </div>`;
+                    }
+                    gridHTML += `</div>`;
+                }
+                gridHTML += `</div>`;
+            }
+            gridHTML += `</div>`;
+
+            layerDiv.innerHTML = gridHTML;
+            wrapper.prepend(layerDiv);
+
+            const newDropZones = layerDiv.querySelectorAll('.drop-zone');
+            attachDropZoneEvents(newDropZones);
+        }
+
+        // EVENT LISTENER DROP ZONE
+        function attachDropZoneEvents(zones) {
+            zones.forEach(zone => {
+                if (zone.dataset.eventsAttached) return;
+                zone.dataset.eventsAttached = true;
+
+                zone.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    if (zone.id !== 'sidebar-container' && zone.querySelectorAll('.draggable-item').length > 0) return; 
+                    
+                    if (this.id === 'sidebar-container') {
+                        this.classList.add('border-red-400', 'bg-red-50');
+                    } else {
+                        this.classList.add('border-blue-500', 'bg-blue-50');
+                    }
+                });
+
+                zone.addEventListener('dragleave', function () {
+                    this.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-400', 'bg-red-50');
+                });
+
+                zone.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    this.classList.remove('border-blue-500', 'bg-blue-50', 'border-red-400', 'bg-red-50');
+
+                    if (this.id !== 'sidebar-container' && this.querySelectorAll('.draggable-item').length > 0) return;
+
+                    const id = e.dataTransfer.getData('text/plain');
+                    const draggedEl = document.getElementById(id);
+
+                    if (draggedEl) {
+                        if (this.id !== 'sidebar-container') {
+                            const placeholder = this.querySelector('span');
+                            if (placeholder) placeholder.remove();
+                        }
+                        this.appendChild(draggedEl);
+                    }
+                });
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            attachDropZoneEvents([document.getElementById('sidebar-container')]);
+            addLayer(); 
+        });
+
+        // LOGIKA CRANE
+        function moveCrane(clientX) {
+            const bridgeRect = craneBridge.getBoundingClientRect();
+            let relativeX = clientX - bridgeRect.left;
+
+            if (relativeX < 30) relativeX = 30;
+            if (relativeX > bridgeRect.width - 30) relativeX = bridgeRect.width - 30;
+
+            craneTrolley.style.left = `${relativeX}px`;
+            craneTrolley.style.transform = 'translateX(-50%)';
+
+            if (isDragging) updateRopes(clientX);
+        }
+
+        function updateRopes(clientX) {
+            const trolleyRect = craneTrolley.getBoundingClientRect();
+            const trolleyBottomX = trolleyRect.left + trolleyRect.width / 2;
+            const trolleyBottomY = trolleyRect.bottom;
+
+            const hookX = clientX;
+            const hookY = window.event && window.event.clientY ? window.event.clientY - 35 : trolleyBottomY + 150;
+
+            craneHook.style.left = `${hookX}px`;
+            craneHook.style.top = `${hookY}px`;
+            craneHook.style.transform = 'translateX(-50%)';
+
+            ropeLeft.setAttribute('x1', trolleyBottomX - 25);
+            ropeLeft.setAttribute('y1', trolleyBottomY);
+            ropeLeft.setAttribute('x2', hookX - 45);
+            ropeLeft.setAttribute('y2', hookY + 8);
+
+            ropeRight.setAttribute('x1', trolleyBottomX + 25);
+            ropeRight.setAttribute('y1', trolleyBottomY);
+            ropeRight.setAttribute('x2', hookX + 45);
+            ropeRight.setAttribute('y2', hookY + 8);
+        }
+
+        mainContainer.addEventListener('mousemove', e => moveCrane(e.clientX));
+
+        draggables.forEach(item => {
+            item.addEventListener('dragstart', function (e) {
+                isDragging = true;
+                e.dataTransfer.setData('text/plain', this.id);
+                setTimeout(() => this.classList.add('dragging'), 0);
+
+                ropeLeft.classList.remove('hidden');
+                ropeRight.classList.remove('hidden');
+                craneHook.classList.remove('hidden');
+            });
+
+            item.addEventListener('drag', e => { if (e.clientX > 0) moveCrane(e.clientX); });
+
+            item.addEventListener('dragend', function () {
+                isDragging = false;
+                this.classList.remove('dragging');
+                ropeLeft.classList.add('hidden');
+                ropeRight.classList.add('hidden');
+                craneHook.classList.add('hidden');
+            });
+        });
+
+        // FUNGSI MEMBUKA PRATINJAU (1 LAYER = 1 HALAMAN PDF)
+        function openPreview() {
+            const modal = document.getElementById('preview-modal');
+            const previewContent = document.getElementById('pdf-preview-content');
+            const sourceArea = document.getElementById('pdf-source-area');
+            
+            previewContent.innerHTML = '';
+            
+            // 1. Ambil Header Asli dan Bersihkan Tombolnya
+            const headerOriginal = document.getElementById('report-header');
+            const headerCloned = headerOriginal.cloneNode(true);
+            headerCloned.querySelectorAll('button').forEach(btn => btn.remove());
+            
+            // 2. Kumpulkan Semua Layer yang Ada di Dalam Wrapper
+            const layers = sourceArea.querySelectorAll('.layer-block');
+            
+            // 3. Buat Container Utama Untuk Kumpulan PDF Halaman
+            const pdfContainer = document.createElement('div');
+            pdfContainer.className = 'w-full flex flex-col gap-6';
+
+            // 4. Looping untuk Membuat Setiap Layer Menjadi 1 Lembar
+            layers.forEach((layer, index) => {
+                
+                // Buat Kotak Halaman
+                const pageDiv = document.createElement('div');
+                // Menggunakan styling mirip area asli agar bentuknya tetap bagus saat dicetak
+                pageDiv.className = 'w-full p-6 flex flex-col gap-4 border-2 border-gray-300 bg-white rounded-lg shadow-sm';
+                
+                // Pasang Header di setiap Halaman
+                pageDiv.appendChild(headerCloned.cloneNode(true));
+                
+                // Kloning Isi Layer beserta kontainernya
+                const layerCloned = layer.cloneNode(true);
+                
+                // Sinkronisasi Drag & Drop (Memindahkan Data Kontainer)
+                const originalZones = layer.querySelectorAll('.drop-zone');
+                const clonedZones = layerCloned.querySelectorAll('.drop-zone');
+                
+                originalZones.forEach((origZone, i) => {
+                    const containerInSlot = origZone.querySelector('.draggable-item');
+                    if (containerInSlot) {
+                        clonedZones[i].innerHTML = ''; 
+                        clonedZones[i].appendChild(containerInSlot.cloneNode(true));
+                    }
+                });
+
+                pageDiv.appendChild(layerCloned);
+                pdfContainer.appendChild(pageDiv);
+
+                // TAMBAHAN KRUSIAL: Memaksa Pindah Halaman (Page Break) untuk html2pdf
+                if (index < layers.length - 1) {
+                    const pageBreak = document.createElement('div');
+                    pageBreak.className = 'html2pdf__page-break'; // Class ajaib dari html2pdf
+                    pdfContainer.appendChild(pageBreak);
+                }
+            });
+
+            previewContent.appendChild(pdfContainer);
+            modal.classList.remove('hidden');
+        }
+
+        function closePreview() {
+            const modal = document.getElementById('preview-modal');
+            modal.classList.add('hidden');
+        }
+
+        // FUNGSI DOWNLOAD PDF
+        function downloadPDF() {
+            const element = document.getElementById('pdf-preview-content');
+            const options = {
+                margin:       10,
+                filename:     'laporan-posisi-kontainer-berlapis.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().from(element).set(options).save().then(() => {
+                closePreview();
+            });
+        }
+    </script>
+</body>
+</html>
