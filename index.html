@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,17 +13,31 @@
         .dragging {
             opacity: 0.3;
         }
+
         /* Kustomisasi scrollbar agar lebih rapi */
         #layers-wrapper::-webkit-scrollbar {
             width: 8px;
         }
+
         #layers-wrapper::-webkit-scrollbar-thumb {
             background-color: #cbd5e1;
             border-radius: 10px;
         }
     </style>
 </head>
+
 <body class="bg-blue-50 overflow-hidden select-none">
+    <!-- OVERLAY PERINGATAN MOBILE -->
+    <div class="fixed inset-0 bg-blue-50 z-[100] flex flex-col items-center justify-center p-6 text-center md:hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl border-2 border-amber-500 max-w-sm">
+            <div class="text-4xl mb-3">🖥️</div>
+            <h2 class="text-lg font-bold text-gray-800 mb-2">Tampilan Tidak Didukung</h2>
+            <p class="text-sm text-gray-600">
+                Aplikasi Drag and Drop ini membutuhkan layar yang lebar dan hanya dapat dioperasikan melalui perangkat
+                <b>Desktop / Laptop</b>.
+            </p>
+        </div>
+    </div>
 
     <main id="main-container" class="w-full h-screen relative">
 
@@ -33,39 +48,47 @@
         </svg>
 
         <!-- CRANE BRIDGE & TROLLY -->
-        <div id="crane-bridge" class="absolute top-2 left-0 right-0 h-[3rem] mx-7 flex items-center px-4 border-2 border-amber-600 bg-amber-500 rounded shadow-md z-30 pointer-events-none">
-            <div id="crane-trolley" class="absolute left-1/2 -translate-x-1/2 w-16 h-8 bg-gray-900 rounded border-2 border-amber-400 flex flex-col items-center justify-center text-amber-400 font-bold text-[10px] shadow transition-transform duration-75 ease-out">
+        <div id="crane-bridge"
+            class="absolute top-2 left-0 right-0 h-[3rem] mx-7 flex items-center px-4 border-2 border-amber-600 bg-amber-500 rounded shadow-md z-30 pointer-events-none">
+            <div id="crane-trolley"
+                class="absolute left-1/2 -translate-x-1/2 w-16 h-8 bg-gray-900 rounded border-2 border-amber-400 flex flex-col items-center justify-center text-amber-400 font-bold text-[10px] shadow transition-transform duration-75 ease-out">
                 <span>CRANE</span>
                 <div class="w-2 h-2 bg-amber-500 rounded-full mt-0.5"></div>
             </div>
         </div>
 
         <!-- SPREADER / HOOK BAWAH -->
-        <div id="crane-hook" class="absolute w-24 h-4 bg-amber-500 rounded border-2 border-gray-900 z-30 pointer-events-none hidden flex items-center justify-center shadow-lg">
+        <div id="crane-hook"
+            class="absolute w-24 h-4 bg-amber-500 rounded border-2 border-gray-900 z-30 pointer-events-none hidden flex items-center justify-center shadow-lg">
             <span class="text-[9px] font-bold text-white tracking-widest">SPREADER</span>
         </div>
 
         <!-- ASIDE: Tempat Asal Kontainer -->
-        <aside id="sidebar-container" class="drop-zone absolute p-4 w-[17rem] flex flex-col gap-4 top-[4.5rem] right-4 bottom-[3rem] border-2 border-gray-300 bg-white shadow-xl rounded-lg overflow-y-auto z-20">
+        <aside id="sidebar-container"
+            class="drop-zone absolute p-4 w-[17rem] flex flex-col gap-4 top-[4.5rem] right-4 bottom-[3rem] border-2 border-gray-300 bg-white shadow-xl rounded-lg overflow-y-auto z-20">
             <h4 class="font-bold text-gray-700 text-sm mb-1 pointer-events-none">Yard (Kontainer):</h4>
-            
-            <div draggable="true" id="item-1" class="draggable-item w-full border-2 border-red-800 bg-red-600 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-red-700">
+
+            <div draggable="true" id="item-1"
+                class="draggable-item w-full border-2 border-red-800 bg-red-600 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-red-700">
                 <span>CONTAINER 01</span>
                 <span class="text-[10px] font-normal opacity-80">40ft - Dry</span>
             </div>
-            <div draggable="true" id="item-2" class="draggable-item w-full border-2 border-orange-800 bg-orange-600 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-orange-700">
+            <div draggable="true" id="item-2"
+                class="draggable-item w-full border-2 border-orange-800 bg-orange-600 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-orange-700">
                 <span>CONTAINER 02</span>
                 <span class="text-[10px] font-normal opacity-80">20ft - Dry</span>
             </div>
-            <div draggable="true" id="item-3" class="draggable-item w-full border-2 border-blue-900 bg-blue-700 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-blue-800">
+            <div draggable="true" id="item-3"
+                class="draggable-item w-full border-2 border-blue-900 bg-blue-700 text-white h-[4rem] flex flex-col justify-center items-center rounded cursor-grab active:cursor-grabbing font-bold shadow-md transition hover:bg-blue-800">
                 <span>CONTAINER 03</span>
                 <span class="text-[10px] font-normal opacity-80">40ft - HC</span>
             </div>
         </aside>
 
         <!-- KOTAK UTAMA (Area Kapal / Drop Zones) -->
-        <div id="pdf-source-area" class="absolute p-6 flex flex-col gap-4 border-2 border-gray-300 top-[4.5rem] left-7 w-[77%] bottom-[3rem] bg-white rounded-lg shadow-sm z-10">
-            
+        <div id="pdf-source-area"
+            class="absolute p-6 flex flex-col gap-4 border-2 border-gray-300 top-[4.5rem] left-7 w-[77%] bottom-[3rem] bg-white rounded-lg shadow-sm z-10">
+
             <!-- Header & Tombol Aksi -->
             <div class="flex justify-between items-center border-b pb-3 shrink-0" id="report-header">
                 <div>
@@ -73,10 +96,12 @@
                     <p class="text-xs text-gray-500">Lotus Prakasa Lines (LPL) Operational Terminal</p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="addLayer()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center cursor-pointer">
+                    <button onclick="addLayer()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center cursor-pointer">
                         ➕ Tambah Lapisan (Stack)
                     </button>
-                    <button onclick="openPreview()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center gap-1 cursor-pointer">
+                    <button onclick="openPreview()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center gap-1 cursor-pointer">
                         🔍 Pratinjau & Cetak PDF
                     </button>
                 </div>
@@ -97,7 +122,8 @@
             <!-- Header Modal -->
             <div class="p-4 border-b flex justify-between items-center bg-gray-50 shrink-0">
                 <h3 class="font-bold text-gray-800 text-base">Pratinjau Dokumen PDF (Bay Plan)</h3>
-                <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 font-bold text-lg cursor-pointer">&times;</button>
+                <button onclick="closePreview()"
+                    class="text-gray-500 hover:text-gray-700 font-bold text-lg cursor-pointer">&times;</button>
             </div>
             <!-- Konten Pratinjau -->
             <div class="p-6 overflow-y-auto bg-gray-100 flex-1">
@@ -107,8 +133,10 @@
             </div>
             <!-- Footer Modal -->
             <div class="p-4 border-t flex justify-end gap-2 bg-gray-50 shrink-0 z-10 relative">
-                <button onclick="closePreview()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold px-4 py-2 rounded transition cursor-pointer">Batal</button>
-                <button onclick="downloadPDF()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center gap-1 cursor-pointer">
+                <button onclick="closePreview()"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 text-xs font-semibold px-4 py-2 rounded transition cursor-pointer">Batal</button>
+                <button onclick="downloadPDF()"
+                    class="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded shadow transition flex items-center gap-1 cursor-pointer">
                     📥 Download PDF
                 </button>
             </div>
@@ -122,7 +150,7 @@
         const craneBridge = document.getElementById('crane-bridge');
         const craneTrolley = document.getElementById('crane-trolley');
         const mainContainer = document.getElementById('main-container');
-        
+
         const ropeLeft = document.getElementById('rope-left');
         const ropeRight = document.getElementById('rope-right');
         const craneHook = document.getElementById('crane-hook');
@@ -147,11 +175,11 @@
                 <div class="flex gap-6 justify-between w-full">
             `;
 
-            for(let col = 0; col < 2; col++) {
+            for (let col = 0; col < 2; col++) {
                 gridHTML += `<div class="border-2 border-gray-200 bg-gray-100 p-4 flex-1 flex flex-col gap-4 justify-between rounded">`;
-                for(let row = 0; row < 3; row++) {
+                for (let row = 0; row < 3; row++) {
                     gridHTML += `<div class="border-2 border-dashed border-gray-400 bg-white flex flex-1 rounded transition p-2 gap-2">`;
-                    for(let slot = 0; slot < 3; slot++) {
+                    for (let slot = 0; slot < 3; slot++) {
                         gridHTML += `<div class="drop-zone border-2 border-gray-200 flex-1 flex justify-center items-center rounded bg-gray-50 transition min-h-[4.5rem]">
                             <span class="text-gray-400 text-xs pointer-events-none">Slot ${slotCounter++}</span>
                         </div>`;
@@ -177,8 +205,8 @@
 
                 zone.addEventListener('dragover', function (e) {
                     e.preventDefault();
-                    if (zone.id !== 'sidebar-container' && zone.querySelectorAll('.draggable-item').length > 0) return; 
-                    
+                    if (zone.id !== 'sidebar-container' && zone.querySelectorAll('.draggable-item').length > 0) return;
+
                     if (this.id === 'sidebar-container') {
                         this.classList.add('border-red-400', 'bg-red-50');
                     } else {
@@ -212,7 +240,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             attachDropZoneEvents([document.getElementById('sidebar-container')]);
-            addLayer(); 
+            addLayer();
         });
 
         // LOGIKA CRANE
@@ -281,43 +309,43 @@
             const modal = document.getElementById('preview-modal');
             const previewContent = document.getElementById('pdf-preview-content');
             const sourceArea = document.getElementById('pdf-source-area');
-            
+
             previewContent.innerHTML = '';
-            
+
             // 1. Ambil Header Asli dan Bersihkan Tombolnya
             const headerOriginal = document.getElementById('report-header');
             const headerCloned = headerOriginal.cloneNode(true);
             headerCloned.querySelectorAll('button').forEach(btn => btn.remove());
-            
+
             // 2. Kumpulkan Semua Layer yang Ada di Dalam Wrapper
             const layers = sourceArea.querySelectorAll('.layer-block');
-            
+
             // 3. Buat Container Utama Untuk Kumpulan PDF Halaman
             const pdfContainer = document.createElement('div');
             pdfContainer.className = 'w-full flex flex-col gap-6';
 
             // 4. Looping untuk Membuat Setiap Layer Menjadi 1 Lembar
             layers.forEach((layer, index) => {
-                
+
                 // Buat Kotak Halaman
                 const pageDiv = document.createElement('div');
                 // Menggunakan styling mirip area asli agar bentuknya tetap bagus saat dicetak
                 pageDiv.className = 'w-full p-6 flex flex-col gap-4 border-2 border-gray-300 bg-white rounded-lg shadow-sm';
-                
+
                 // Pasang Header di setiap Halaman
                 pageDiv.appendChild(headerCloned.cloneNode(true));
-                
+
                 // Kloning Isi Layer beserta kontainernya
                 const layerCloned = layer.cloneNode(true);
-                
+
                 // Sinkronisasi Drag & Drop (Memindahkan Data Kontainer)
                 const originalZones = layer.querySelectorAll('.drop-zone');
                 const clonedZones = layerCloned.querySelectorAll('.drop-zone');
-                
+
                 originalZones.forEach((origZone, i) => {
                     const containerInSlot = origZone.querySelector('.draggable-item');
                     if (containerInSlot) {
-                        clonedZones[i].innerHTML = ''; 
+                        clonedZones[i].innerHTML = '';
                         clonedZones[i].appendChild(containerInSlot.cloneNode(true));
                     }
                 });
@@ -346,11 +374,11 @@
         function downloadPDF() {
             const element = document.getElementById('pdf-preview-content');
             const options = {
-                margin:       10,
-                filename:     'laporan-posisi-kontainer-berlapis.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                margin: 10,
+                filename: 'laporan-posisi-kontainer-berlapis.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
@@ -359,4 +387,5 @@
         }
     </script>
 </body>
+
 </html>
