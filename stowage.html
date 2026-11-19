@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stowage Plan – Prototype</title>
+<style>
+:root{--navy:#12304a;--line:#cbd5e1;--bg:#f3f6fa;--ink:#172536;--muted:#64748b;--green:#e8f6ef;--amber:#fff4dc}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 Arial,sans-serif}.top{background:var(--navy);color:white;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.top h1{font-size:20px;margin:0}.top p{margin:4px 0 0;color:#c9d8e5;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #b9c8d5;background:white;color:var(--navy);padding:8px 12px;border-radius:7px;cursor:pointer;font-weight:600}.btn.primary{background:#1d91c5;color:white;border-color:#1d91c5}.btn.danger{color:#a12b2b}.wrap{padding:12px 16px 16px;max-width:1600px;margin:auto;height:calc(100dvh - 70px);display:flex;flex-direction:column;min-height:0}.notice{background:#fff8e8;border:1px solid #f0d69b;border-radius:8px;padding:10px 12px;margin-bottom:14px;color:#70531b;font-size:12px}.summary{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px;margin-bottom:14px}.metric{background:white;border:1px solid var(--line);border-radius:9px;padding:12px}.metric small{color:var(--muted)}.metric strong{display:block;font-size:22px;margin-top:4px}.toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;background:white;padding:12px;border:1px solid var(--line);border-radius:9px;margin-bottom:14px}.field{display:flex;flex-direction:column;gap:4px}.field label{font-size:11px;color:var(--muted);font-weight:bold}.field input,.field select{padding:8px;border:1px solid var(--line);border-radius:6px;min-width:130px}.bays{display:flex;flex:1 1 auto;min-height:0;min-width:0;flex-wrap:nowrap;gap:14px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:thin;padding-bottom:6px}.bay{background:white;border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:100%;flex:0 0 100%;height:100%;scroll-snap-align:start}.bayhead{background:#eaf2f8;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}.bayhead h2{font-size:15px;margin:0;color:var(--navy)}.baymeta{font-size:11px;color:var(--muted)}.baybody{padding:10px}.mov{width:100%;border-collapse:collapse;text-align:center;font-size:11px;margin-bottom:10px}.mov th,.mov td{border:1px solid var(--line);padding:5px}.mov th{background:#f4f7fa}.slotgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 7px;align-items:start}.slot{border:0;overflow:visible;min-width:0;background:#fff;cursor:pointer}.slot:hover{outline:2px solid #7cc4e5}.position-table{width:100%;table-layout:fixed;border-collapse:collapse;text-align:center;font-size:10px;line-height:1.15;color:#111}.position-table th,.position-table td{border:1px solid #111;padding:4px 2px;font-weight:normal}.position-table th{font-weight:bold}.position-table .container-number{height:22px;overflow-wrap:anywhere;font-size:9px}.position-table .container-number.empty{color:#111}.position-table .container-number.filled{background:var(--green);font-weight:bold}.position-table .container-number.long{background:var(--amber);font-weight:bold}
+.info-position td{height:31px;padding:3px 2px}
+.info-position small{display:block;font-size:8px;line-height:1.1;color:#526274;margin-bottom:2px}
+.info-position strong{display:block;font-size:10px;line-height:1.15;overflow-wrap:anywhere}
+.info-position .container-number{height:36px}
+.info-position .container-number small{font-size:8px}
+.info-position .container-number strong{font-size:10px}.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin:12px 0}.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}.modal{display:none;position:fixed;inset:0;background:#0b1725a8;z-index:5;align-items:center;justify-content:center;padding:16px}.modal.open{display:flex}.dialog{background:white;border-radius:12px;padding:18px;width:min(520px,100%);max-height:90vh;overflow:auto}.dialog h3{margin:0 0 14px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formgrid .wide{grid-column:1/-1}.dialog input,.dialog select{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px}.dialog label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:bold}.dialogactions{display:flex;justify-content:space-between;gap:8px;margin-top:16px}.muted{color:var(--muted);font-size:11px}.foot{color:var(--muted);font-size:11px;margin-top:14px}@media(max-width:850px){.wrap{height:calc(100dvh - 70px);padding:10px}.summary{grid-template-columns:repeat(2,1fr)}.bay{min-width:100%;flex-basis:100%}}@media print{body{background:white}.wrap{height:auto;display:block;overflow:visible}.bays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;height:auto}.bay{min-width:0;flex:auto;height:auto;overflow:visible}.top{background:white;color:black;border-bottom:2px solid #333}.top p{color:#555}.actions,.toolbar,.notice,.foot{display:none!important}.wrap{padding:5px}.bays{grid-template-columns:repeat(2,1fr);gap:8px}.bay{break-inside:avoid}.bayhead{background:#eee!important}.slotgrid{gap:3px}.slotbody{min-height:48px}}
+
+/* MODE FOKUS VISUAL BAY: monitoring dan filter disembunyikan sementara */
+.notice,.summary,.toolbar,.foot{display:none!important}
+.wrap{height:calc(100dvh - 66px);padding:10px 12px 12px}
+.legend{margin:4px 0 8px}
+
+/* Layout BAY mengikuti struktur referensi: visual kiri, rekap tonase kanan */
+.baybody.bay-layout{display:grid;grid-template-columns:minmax(0,70%) minmax(190px,30%);gap:0;padding:8px;height:calc(100% - 42px);min-height:0}
+.bay-visual{display:flex;flex-direction:column;min-width:0;min-height:0;padding:4px 8px 4px 2px;gap:8px}
+.deck-area,.hole-area{display:flex;flex-direction:column;flex:1 1 50%;min-height:0;gap:5px}
+.hole-area{border-top:1px solid #9aa8b5;padding-top:7px}
+.area-label{font-size:10px;font-weight:700;letter-spacing:.08em;color:#536273;text-align:center;flex:0 0 auto}
+.tier-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;flex:1 1 50%;min-height:0}
+.tier-row .slot{min-width:0;display:flex;align-items:stretch}
+.tier-row .slot .position-table{height:100%;border:1px solid #111;border-style:solid}
+.tier-84 .slot:first-child{grid-column:2}
+.tier-84 .slot:nth-child(2){grid-column:3}
+.bay-totals{border-left:1px solid #9aa8b5;display:flex;flex-direction:column;min-width:0;min-height:0;padding:4px 6px;gap:6px}
+.total-area{display:flex;align-items:center;justify-content:center;flex:1 1 50%;min-height:0;padding:4px}
+.total-area+.total-area{border-top:1px solid #9aa8b5}
+.total-area .mov{margin:0;font-size:clamp(9px,1vw,12px)}
+.total-area .mov th,.total-area .mov td{padding:5px 3px}
+.info-position th{font-weight:700;font-size:10px}
+.info-position td{height:auto;padding:3px 2px;font-size:9px;overflow-wrap:anywhere}
+.info-position .container-number{height:auto;min-height:24px}
+@media(max-width:760px){.baybody.bay-layout{grid-template-columns:minmax(0,68%) minmax(135px,32%);padding:5px}.bay-visual{padding-right:4px}.tier-row{gap:3px}.info-position th{font-size:8px}.info-position td{font-size:7px}.total-area .mov{font-size:8px}}
+</style></head><body>
+<header class="top"><div><h1>STOWAGE PLAN CONTAINER</h1><p>Prototype interaktif · Struktur awal mengikuti layout BAY pada file Anda</p></div><div class="actions"><button class="btn" onclick="window.print()">Cetak / PDF</button><button class="btn" onclick="exportCSV()">Export CSV</button><button class="btn" onclick="document.getElementById('csvFile').click()">Import CSV</button><input id="csvFile" type="file" accept=".csv" hidden onchange="importCSV(event)"><button class="btn primary" onclick="openAdd()">+ Tambah Kontainer</button></div></header>
+<main class="wrap"><div class="notice"><b>Catatan prototype:</b> penempatan saat ini adalah pencatatan posisi visual, bukan rekomendasi keselamatan/stabilitas kapal. Nomor posisi, kapasitas, batas stack, berat, dan aturan kapal wajib diverifikasi dari stowage plan serta dokumen teknis resmi.</div>
+<section class="summary"><div class="metric"><small>Total kontainer</small><strong id="mTotal">0</strong></div><div class="metric"><small>20 FT</small><strong id="m20">0</strong></div><div class="metric"><small>40 FT</small><strong id="m40">0</strong></div><div class="metric"><small>Total V.MOV</small><strong id="mMov">0.00</strong></div></section>
+<section class="toolbar"><div class="field"><label>Nama kapal</label><input id="shipName" value="KM LOTUS PACIFIC" onchange="save()"></div><div class="field"><label>Voyage / tanggal</label><input id="voyage" placeholder="Isi voyage / tanggal" onchange="save()"></div><div class="field"><label>Filter tujuan</label><select id="filterPort" onchange="render()"><option value="">Semua tujuan</option></select></div><div class="field"><label>Cari kontainer</label><input id="search" placeholder="Nomor kontainer" oninput="render()"></div><button class="btn" onclick="clearAll()">Kosongkan data</button></section>
+<div class="legend"><span><i class="dot" style="background:#e8f6ef"></i>20 FT terisi</span><span><i class="dot" style="background:#fff4dc"></i>40 FT terisi</span><span><i class="dot" style="background:#fbfdff;border:1px solid #9fb2c3"></i>Posisi kosong</span></div><section id="bays" class="bays"></section><p class="foot">Setiap BAY menampilkan tabel posisi 02, 03, dan 05–16; posisi 01 dan 04 ditiadakan. Klik slot untuk mengisi atau mengubah data. Data tersimpan di browser/perangkat ini (local storage), bukan server.</p></main>
+<div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Data Kontainer</h3><form id="containerForm" onsubmit="submitContainer(event)"><input type="hidden" id="recordId"><input type="hidden" id="fBay"><input type="hidden" id="fSlot"><div class="formgrid"><div><label>Pelabuhan awal</label><input id="fLoadingPort" placeholder="Masukkan pelabuhan awal" required></div><div><label>Pelabuhan tujuan</label><input id="fPort" placeholder="Masukkan pelabuhan tujuan" required></div><div class="wide"><label>Nomor kontainer</label><input id="fNumber" placeholder="Contoh: TGHU123456-7" required></div><div><label>Berat (ton)</label><input id="fWeight" type="number" min="0" step="0.01" placeholder="Masukkan berat" required></div></div><p class="muted">Posisi kontainer dan Cell No mengikuti tabel BAY/posisi yang Anda klik. Keduanya terisi otomatis dan tidak perlu dipilih di form.</p><div class="dialogactions"><button type="button" class="btn danger" id="deleteBtn" onclick="deleteRecord()" style="display:none">Hapus</button><div style="margin-left:auto;display:flex;gap:8px"><button type="button" class="btn" onclick="closeModal()">Batal</button><button class="btn primary" type="button" onclick="submitContainer(event)">Simpan</button></div></div></form></div></div>
+<script>
+const BAY_IDS=[1,3,5,7,9,11,13],ALLOWED_SLOTS=[2,3,5,6,7,8,9,10,11,12,13,14,15,16];let records=JSON.parse(localStorage.getItem('stowageRecords')||'[]');const $=id=>document.getElementById(id);
+function save(){localStorage.setItem('stowageRecords',JSON.stringify(records));localStorage.setItem('stowageShip',$('shipName').value);localStorage.setItem('stowageVoyage',$('voyage').value);updateSummary()}
+$('shipName').value=localStorage.getItem('stowageShip')||'KM LOTUS PACIFIC';$('voyage').value=localStorage.getItem('stowageVoyage')||'';
+function slotLabel(n){return String(n).padStart(2,'0')}
+const CELL_LAYOUT={2:{row:2,tier:84},3:{row:1,tier:84},5:{row:4,tier:82},6:{row:2,tier:82},7:{row:1,tier:82},8:{row:3,tier:82},9:{row:4,tier:4},10:{row:2,tier:4},11:{row:1,tier:4},12:{row:3,tier:4},13:{row:4,tier:2},14:{row:2,tier:2},15:{row:1,tier:2},16:{row:3,tier:2}};
+function getCellNo(bay,slot){const p=CELL_LAYOUT[slot];return p?String(bay)+String(p.row)+String(p.tier):'—'}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+ const root=$('bays'),old=$('filterPort').value,q=$('search').value.toLowerCase(),ports=[...new Set(records.map(r=>r.port).filter(Boolean))].sort();
+ $('filterPort').innerHTML='<option value="">Semua tujuan</option>'+ports.map(p=>`<option>${esc(p)}</option>`).join('');
+ $('filterPort').value=ports.includes(old)?old:'';
+ root.innerHTML='';
+ const groups=[
+  {name:'ON DECK · TIER 84',slots:[2,3],tier:84,area:'deck',row:1},
+  {name:'ON DECK · TIER 82',slots:[5,6,7,8],tier:82,area:'deck',row:2},
+  {name:'IN HOLE · TIER 04',slots:[9,10,11,12],tier:4,area:'hole',row:1},
+  {name:'IN HOLE · TIER 02',slots:[13,14,15,16],tier:2,area:'hole',row:2}
+ ];
+ BAY_IDS.forEach(b=>{
+  const list=records.filter(r=>r.bay===b);
+  const visible=list.filter(r=>(!$('filterPort').value||r.port===$('filterPort').value)&&(!q||r.number.toLowerCase().includes(q)));
+  const total=list.reduce((a,r)=>a+Number(r.weight||0),0);
+  function slotHTML(s){
+   const r=records.find(x=>x.bay===b&&x.slot===s),show=r&&visible.includes(r);
+   return `<div class="slot" onclick="openSlot(${b},${s})"><table class="position-table info-position"><thead><tr><th>${esc(getCellNo(b,s))}</th><th>${show&&r.weight!==''?esc(r.weight)+' TON':'GROSS WEIGHT'}</th></tr></thead><tbody><tr><td>${show?esc(r.loadingPort||'—'):'LOADING PORT'}</td><td>${show?esc(r.port||'—'):'DISCHARGING PORT'}</td></tr><tr><td colspan="2" class="container-number ${show?(r.size==='40 FT'?'long':'filled'):'empty'}">${show?esc(r.number):'CONTAINER NUMBER'}</td></tr></tbody></table></div>`;
+  }
+  const deck84=list.filter(r=>[2,3].includes(r.slot)).reduce((a,r)=>a+Number(r.weight||0),0);
+  const deck82=list.filter(r=>[5,6,7,8].includes(r.slot)).reduce((a,r)=>a+Number(r.weight||0),0);
+  const hole04=list.filter(r=>[9,10,11,12].includes(r.slot)).reduce((a,r)=>a+Number(r.weight||0),0);
+  const hole02=list.filter(r=>[13,14,15,16].includes(r.slot)).reduce((a,r)=>a+Number(r.weight||0),0);
+  const deckTotal=deck84+deck82,holeTotal=hole04+hole02;
+  let html=`<article class="bay"><div class="bayhead"><h2>BAY ${b}</h2><span class="baymeta">${list.length} kontainer · V.MOV ${total.toFixed(2)}</span></div>
+   <div class="baybody bay-layout">
+    <div class="bay-visual">
+     <section class="deck-area"><div class="area-label">ON DECK</div>
+      <div class="tier-row tier-84">${groups[0].slots.map(slotHTML).join('')}</div>
+      <div class="tier-row tier-82">${groups[1].slots.map(slotHTML).join('')}</div>
+     </section>
+     <section class="hole-area"><div class="area-label">IN HOLE</div>
+      <div class="tier-row tier-04">${groups[2].slots.map(slotHTML).join('')}</div>
+      <div class="tier-row tier-02">${groups[3].slots.map(slotHTML).join('')}</div>
+     </section>
+    </div>
+    <aside class="bay-totals">
+     <section class="total-area"><table class="mov"><thead><tr><th colspan="2">BAY ${String(b).padStart(2,'0')} ON DECK</th></tr><tr><th>V.MOV</th><th>TTL V.MOV</th></tr></thead><tbody><tr><td>${deck84.toFixed(2)} TON</td><td rowspan="2">${deckTotal.toFixed(2)} TON</td></tr><tr><td>${deck82.toFixed(2)} TON</td></tr></tbody></table></section>
+     <section class="total-area"><table class="mov"><thead><tr><th colspan="2">BAY ${String(b).padStart(2,'0')} IN HOLE</th></tr><tr><th>V.MOV</th><th>TTL V.MOV</th></tr></thead><tbody><tr><td>${hole04.toFixed(2)} TON</td><td rowspan="2">${holeTotal.toFixed(2)} TON</td></tr><tr><td>${hole02.toFixed(2)} TON</td></tr></tbody></table></section>
+    </aside>
+   </div></article>`;
+  root.insertAdjacentHTML('beforeend',html);
+ });
+ updateSummary();
+}
+function updateSummary(){$('mTotal').textContent=records.length;$('m20').textContent=records.filter(r=>r.size==='20 FT').length;$('m40').textContent=records.filter(r=>r.size==='40 FT').length;$('mMov').textContent=records.reduce((a,r)=>a+Number(r.weight||0),0).toFixed(2)}
+function populate(){}
+function openSlot(b,s){populate();let r=records.find(x=>x.bay===b&&x.slot===s);$('recordId').value=r?r.id:'';$('fBay').value=b;$('fSlot').value=s;$('fNumber').value=r?.number||'';$('fPort').value=r?.port||'';$('fLoadingPort').value=r?.loadingPort||'';$('fWeight').value=r?.weight??'';$('modalTitle').textContent=r?'Ubah Kontainer':'Isi Slot BAY '+b+' / '+slotLabel(s);$('deleteBtn').style.display=r?'inline-block':'none';$('modal').classList.add('open')}
+function openAdd(){let free=null;for(let b of BAY_IDS){for(let s of ALLOWED_SLOTS)if(!records.some(r=>r.bay===b&&r.slot===s)){free=[b,s];break}if(free)break}openSlot(...(free||[1,2]));$('modalTitle').textContent='Tambah Kontainer'}function closeModal(){$('modal').classList.remove('open')}
+function submitContainer(e){
+ if(e&&e.preventDefault)e.preventDefault();
+ const bay=Number($('fBay').value),slot=Number($('fSlot').value),id=$('recordId').value;
+ const loadingPort=$('fLoadingPort').value.trim().toUpperCase();
+ const port=$('fPort').value.trim().toUpperCase();
+ const number=$('fNumber').value.trim().toUpperCase();
+ const weight=$('fWeight').value;
+ if(!bay||!CELL_LAYOUT[slot]){alert('Posisi BAY tidak terbaca. Tutup form lalu klik kembali tabel posisi yang diinginkan.');return}
+ if(!loadingPort||!port||!number||weight===''||!Number.isFinite(Number(weight))||Number(weight)<0){alert('Lengkapi pelabuhan awal, pelabuhan tujuan, nomor kontainer, dan berat dengan benar.');return}
+ if(records.some(r=>r.bay===bay&&r.slot===slot&&r.id!==id)){alert('Slot ini sudah terisi. Silakan pilih posisi lain.');return}
+ const old=id?records.find(x=>x.id===id):null;
+ const item={id:id||(String(Date.now())+'-'+Math.random().toString(16).slice(2)),bay,slot,cellNo:getCellNo(bay,slot),number,size:old?.size||'20 FT',port,loadingPort,weight,mov:old?.mov??1};
+ if(old)records=records.map(r=>r.id===id?item:r);else records.push(item);
+ try{save();closeModal();render();}catch(err){console.error(err);alert('Data gagal disimpan di browser. Periksa izin penyimpanan browser atau buka file melalui browser biasa.');}
+}
+function deleteRecord(){let id=$('recordId').value;if(id&&confirm('Hapus data kontainer ini?')){records=records.filter(r=>r.id!==id);save();closeModal();render()}}function clearAll(){if(confirm('Hapus seluruh data kontainer dari browser ini?')){records=[];save();render()}}
+function exportCSV(){let rows=[['bay','slot','cell_no','container_number','size','loading_port','discharging_port','gross_weight_ton','vmov'],...records.map(r=>[r.bay,r.slot,getCellNo(r.bay,r.slot),r.number,r.size,r.loadingPort||'',r.port,r.weight,r.mov])],csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='stowage-data.csv';a.click();URL.revokeObjectURL(a.href)}
+function importCSV(e){let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{let lines=String(rd.result).replace(/^\ufeff/,'').trim().split(/\r?\n/),added=0;lines.slice(1).forEach(line=>{let a=line.match(/("(?:[^"]|"")*"|[^,]*)(,|$)/g)||[];a=a.map(x=>x.replace(/,$/,'').replace(/^"|"$/g,'').replace(/""/g,'"'));let b=Number(a[0]),s=Number(a[1]);if(BAY_IDS.includes(b)&&ALLOWED_SLOTS.includes(s)&&!records.some(r=>r.bay===b&&r.slot===s)){records.push({id:String(Date.now())+Math.random(),bay:b,slot:s,number:a[2]||'',size:a[3]||'20 FT',loadingPort:a.length>=9?(a[4]||''):'',port:a.length>=9?(a[5]||''):(a[4]||''),weight:a.length>=9?(a[6]||''):(a[5]||''),mov:a.length>=9?(a[7]||1):(a[6]||1),position:a.length>=9?(a[8]||''):(a[7]||'')});added++}});save();render();alert(added+' baris berhasil diimpor. Slot terisi/tidak valid dilewati.');e.target.value=''};rd.readAsText(f)}
+render();
+</script></body></html>
