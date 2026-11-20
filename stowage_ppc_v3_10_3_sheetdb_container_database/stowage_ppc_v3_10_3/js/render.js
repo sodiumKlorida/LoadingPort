@@ -83,7 +83,7 @@ function slotCardHTML(b, s, isDashed = false) {
                 : 'bg-transparent text-transparent';
 
     const blockerCellNo = isBlocked ? esc(getCellNo(blocker.bay, blocker.slot)) : '';
-    let weightLabel = 'KOSONG';
+    let weightLabel = '0';
     if (hasRecord && r.weight !== '') {
         weightLabel = is40 ? `${esc(formatHalfWeight(r.weight))} T` : `${esc(r.weight)} T`;
     } else if (isBlocked) {
@@ -110,7 +110,7 @@ function slotCardHTML(b, s, isDashed = false) {
             : isBlocked
                 ? `<span class="whitespace-nowrap font-mono text-xs font-extrabold tracking-tight text-amber-900/90 print:break-all print:whitespace-normal print:text-[8px] print:leading-tight">${esc(blocker.number)}</span>
            <span class="mt-0.5 whitespace-nowrap rounded bg-amber-200/70 px-1.5 py-0.2 text-[9px] font-extrabold tracking-wider text-amber-950 uppercase print:bg-transparent print:p-0 print:text-[6.5px]">DARI ${blockerCellNo}</span>`
-                : `<span class="whitespace-nowrap text-xs font-semibold text-slate-400 group-hover:text-sky-600 print:hidden">+ Isi</span>`
+                : `<span class="whitespace-nowrap text-xs font-semibold text-slate-400 group-hover:text-sky-600 print:hidden">Nomor Container</span>`
         }
       </div>
 
@@ -158,7 +158,7 @@ function vmovCardHTML(title, rows, ttlWeight) {
       </div>
 
       <div class="mt-2.5 md:mt-1 lg:mt-2.5 flex items-center justify-between gap-2 rounded-xl md:rounded-lg lg:rounded-xl bg-sky-600 px-2.5 md:px-2 lg:px-2.5 py-1.5 md:py-1 lg:py-1.5 text-white print:mt-1 print:rounded print:border print:border-slate-800 print:bg-slate-100 print:px-1.5 print:py-0.5 print:text-slate-900">
-        <span class="whitespace-nowrap text-[10px] font-bold tracking-wider uppercase print:text-[6.5px] print:tracking-normal">TTL</span>
+        <span class="whitespace-nowrap text-[10px] font-bold tracking-wider uppercase print:text-[6.5px] print:tracking-normal">V.MOV</span>
         <span class="whitespace-nowrap text-xs font-extrabold sm:text-sm print:text-[8px]">${ttlWeight.toFixed(2)} TON</span>
       </div>
     </div>
@@ -319,7 +319,7 @@ function renderBayCard(b) {
         <div class="flex items-center gap-2 text-xs font-bold print:gap-1.5 print:text-[8.5px]">
           <span class="whitespace-nowrap text-slate-300 print:text-slate-700">${occupiedSlots} / ${slotsForBay(b).length} Slot</span>
           <span class="whitespace-nowrap rounded-xl bg-sky-600 px-2.5 md:px-3 py-1 text-white print:rounded print:border print:border-slate-800 print:bg-white print:px-1.5 print:py-0.5 print:text-slate-900">
-            V.MOV ${total.toFixed(2)} TON
+            TTL ${total.toFixed(2)} TON
           </span>
         </div>
       </div>

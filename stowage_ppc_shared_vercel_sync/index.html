@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stowage Plan Container PPC</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body
+    class="min-h-dvh bg-slate-100 font-sans text-slate-900 antialiased selection:bg-sky-200 selection:text-sky-900 md:h-screen md:overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
+    <!-- Mobile Top Header (hanya < 768px) -->
+    <header
+        class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-slate-900 px-4 py-3 text-white shadow-md md:hidden print:hidden">
+        <div class="flex items-center gap-2.5">
+            <div
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500 font-black text-slate-950">
+                PPC
+            </div>
+            <div class="min-w-0">
+                <h1 class="truncate text-sm font-bold tracking-wide">STOWAGE PLAN</h1>
+                <p id="mobileShipSub" class="truncate text-[11px] text-slate-300">KM LOTUS PACIFIC</p>
+            </div>
+        </div>
+        <div class="flex shrink-0 items-center gap-2">
+            <button type="button" id="mobileSidebarBtn"
+                class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700">
+                Menu &amp; Rekap
+            </button>
+            <button type="button" id="mobilePrintBtn"
+                class="rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-bold text-slate-950 transition hover:bg-sky-400">
+                PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Print-Only Header -->
+    <div class="hidden border-b-2 border-slate-900 px-3 py-2 print:flex print:items-center print:justify-between">
+        <div>
+            <h1 class="text-base font-extrabold tracking-wide text-slate-900">STOWAGE PLAN CONTAINER PPC</h1>
+            <p id="printSubtitle" class="text-[11px] font-medium text-slate-600">KM LOTUS PACIFIC</p>
+        </div>
+        <div id="printSummaryLine" class="text-right text-[11px] font-semibold text-slate-700"></div>
+    </div>
+
+    <!-- Main App Shell: Left Sidebar + Right Workspace -->
+    <div
+        class="mx-auto flex min-h-dvh w-full max-w-[1920px] flex-col md:h-screen md:min-h-0 md:flex-row md:overflow-hidden print:block print:h-auto print:min-h-0 print:overflow-visible">
+        <!-- Backdrop for Mobile/Tablet Drawer Sidebar -->
+        <div id="sidebarBackdrop"
+            class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm lg:hidden print:hidden">
+        </div>
+
+        <!-- Left Control Sidebar (Tablet md: drawer overlay agar Bay full width; Desktop lg: static sidebar) -->
+        <aside id="appSidebar"
+            class="fixed inset-y-0 left-0 z-40 flex w-72 sm:w-80 shrink-0 -translate-x-full flex-col gap-3.5 overflow-y-auto border-r border-slate-200 bg-slate-100 p-3.5 lg:p-4 transition-transform duration-200 lg:static lg:h-screen lg:translate-x-0 print:hidden">
+
+            <!-- GANTI MENU: Dropdown + Icon Hide -->
+            <div class="rounded-2xl bg-slate-900 p-3 text-white shadow-md flex items-center gap-2">
+                <div class="relative flex-1 min-w-0">
+                    <select id="sidebarViewSelect" aria-label="Pilih Tampilan Sidebar"
+                        class="w-full appearance-none rounded-xl border border-slate-700 bg-slate-800 py-2 pr-8 pl-3 text-xs font-bold text-white transition hover:border-slate-600 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30 cursor-pointer">
+                        <option value="main">Main Menu</option>
+                        <option value="containers">List Container Tersedia</option>
+                    </select>
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 text-slate-400"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+
+                <button type="button" id="hideSidebarBtn" title="Sembunyikan Sidebar"
+                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-300 transition hover:bg-sky-600 hover:border-sky-500 hover:text-white active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- VIEW 1: MAIN MENU -->
+            <div id="sidebarMainMenu" class="flex flex-1 flex-col gap-3.5">
+                <!-- Brand Card -->
+                <div class="rounded-2xl bg-slate-900 p-4 text-white shadow-md">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-lg font-extrabold tracking-tight text-white">STOWAGE PLAN PPC</h1>
+                        <button type="button" id="closeSidebarBtn"
+                            class="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden">
+                            &#x2715;
+                        </button>
+                    </div>
+                    <p class="mt-0.5 text-xs text-slate-400">Manajemen Posisi Kontainer &amp; V.MOV</p>
+
+                    <!-- Vessel & Voyage Inputs -->
+                    <div class="mt-3.5 space-y-2 border-t border-slate-800 pt-3">
+                        <div>
+                            <label for="shipName"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Nama
+                                Kapal</label>
+                            <input id="shipName" value="PRAKASA PACIFIC"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white placeholder-slate-400 transition focus:border-sky-400 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label for="voyage"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Kode
+                                Voyage</label>
+                            <input id="voyage" placeholder="Contoh: VOY. 12"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white placeholder-slate-400 transition focus:border-sky-400 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label for="stowageDate"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Tanggal
+                                Stowage</label>
+                            <input id="stowageDate" type="date"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition focus:border-sky-400 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Summary Bento Card -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md">
+                    <div class="mb-2.5 flex items-center justify-between">
+                        <h2 class="text-xs font-bold tracking-wider text-slate-500 uppercase">Ringkasan Muatan</h2>
+                        <span
+                            class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">REALTIME</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <span class="block text-[11px] font-medium text-slate-500">Total Unit</span>
+                            <strong id="mTotal" class="mt-0.5 block text-lg font-extrabold text-slate-900">0</strong>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <span class="block text-[11px] font-medium text-slate-500">Total V.MOV</span>
+                            <div class="mt-0.5 flex items-baseline gap-1">
+                                <strong id="mMov" class="text-lg font-extrabold text-slate-900">0.00</strong>
+                                <span class="text-[10px] font-bold text-slate-400">TON</span>
+                            </div>
+                        </div>
+                        <div class="rounded-xl border border-sky-200 bg-sky-50 p-2.5">
+                            <span class="block text-[11px] font-semibold text-sky-700">20 FT</span>
+                            <strong id="m20" class="mt-0.5 block text-lg font-extrabold text-sky-900">0</strong>
+                        </div>
+                        <div class="rounded-xl border border-amber-200 bg-amber-50 p-2.5">
+                            <span class="block text-[11px] font-semibold text-amber-700">40 FT</span>
+                            <strong id="m40" class="mt-0.5 block text-lg font-extrabold text-amber-900">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Card (Container Number Only) -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md">
+                    <h2 class="mb-2.5 text-xs font-bold tracking-wider text-slate-500 uppercase">Pencarian Kontainer
+                    </h2>
+                    <div class="space-y-2">
+                        <div>
+                            <label for="search" class="mb-1 block text-xs font-semibold text-slate-700">Cari Nomor
+                                Kontainer</label>
+                            <div class="relative">
+                                <input id="search" placeholder="Ketik nomor kontainer..."
+                                    class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 pr-8 pl-3 font-mono text-xs font-semibold text-slate-900 uppercase transition placeholder:font-sans placeholder:font-normal placeholder:normal-case focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <button type="button" id="clearSearchBtn" title="Hapus pencarian"
+                                    class="hidden absolute top-1/2 right-2 -translate-y-1/2 rounded-md px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-slate-200 hover:text-slate-700">
+                                    &#x2715;
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Search Match Feedback & Quick Jump Pills -->
+                        <div id="searchResultBox"
+                            class="hidden space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <p id="searchStatusText" class="text-[11px] font-semibold text-slate-700"></p>
+                            <div id="searchMatchList" class="flex flex-wrap gap-1.5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend & Prototype Note -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md">
+                    <h2 class="mb-2 text-xs font-bold tracking-wider text-slate-500 uppercase">Keterangan Warna</h2>
+                    <div class="space-y-1.5 text-xs text-slate-600">
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-sky-400 bg-sky-100"></span>
+                            <span>Kontainer <strong>20 FT</strong> terisi</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-amber-400 bg-amber-100"></span>
+                            <span>Kontainer <strong>40 FT</strong> (1/2 berat per bay)</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span
+                                class="h-3.5 w-3.5 shrink-0 rounded-md border border-dashed border-amber-500 bg-amber-50"></span>
+                            <span>Pasangan bay <strong>40 FT</strong> (1/2 berat)</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-slate-300 bg-white"></span>
+                            <span>Posisi kosong (klik untuk isi)</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span
+                                class="h-3.5 w-3.5 shrink-0 rounded-md border-2 border-dashed border-slate-500 bg-white"></span>
+                            <span>Tier 84 / After Hatch</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary & Secondary Actions -->
+                <div class="mt-auto space-y-2 pt-1">
+                    <button type="button" id="printPdfBtn"
+                        class="flex w-full items-center justify-center gap-2 rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-sky-700">
+                        Cetak / Simpan PDF
+                    </button>
+                    <button type="button" id="clearAllBtn"
+                        class="flex w-full items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 shadow-sm transition hover:bg-amber-100">
+                        Kosongkan Semua Data
+                    </button>
+                    <p class="px-1 text-[11px] leading-relaxed text-slate-400">
+                        Catatan: Pencatatan posisi visual prototype. Stabilitas &amp; batas stack wajib diverifikasi
+                        dari
+                        dokumen
+                        teknis resmi kapal.
+                    </p>
+                </div>
+            </div>
+
+            <!-- VIEW 2: LIST CONTAINER TERSEDIA (DRAG & DROP TO BAY) -->
+            <div id="sidebarContainerListView" class="hidden flex-1 min-h-0 flex-col gap-3">
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md flex flex-col gap-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <h2 class="text-xs font-extrabold tracking-wider text-slate-800 uppercase">List Container
+                            </h2>
+                            <p id="availableDbStatus" class="text-[11px] text-slate-500">Memuat database...</p>                          <p id="cloudSyncStatus" class="text-[10px] font-semibold text-emerald-700">Sinkronisasi posisi: menghubungkan...</p>
+                        </div>
+                        <button type="button" id="refreshSidebarDbBtn" title="Muat Ulang Data"
+                            class="rounded-xl border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:bg-slate-100">
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <input id="sidebarContainerSearch" placeholder="Cari nomor / tujuan / ukuran..."
+                            class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 pr-8 pl-3 text-xs font-semibold text-slate-900 transition focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                        <button type="button" id="clearSidebarContainerSearchBtn" title="Hapus filter"
+                            class="hidden absolute top-1/2 right-2 -translate-y-1/2 rounded-md px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-slate-200 hover:text-slate-700">
+                            &#x2715;
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" data-size-filter="ALL"
+                            class="sidebar-size-filter flex-1 rounded-lg bg-slate-900 px-2 py-1 text-[11px] font-bold text-white transition">
+                            Semua
+                        </button>
+                        <button type="button" data-size-filter="20"
+                            class="sidebar-size-filter flex-1 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700 transition hover:bg-slate-200">
+                            20 FT
+                        </button>
+                        <button type="button" data-size-filter="40"
+                            class="sidebar-size-filter flex-1 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700 transition hover:bg-slate-200">
+                            40 FT
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label for="tonnageSort" class="shrink-0 text-[11px] font-bold text-slate-600">Urutkan
+                            tonase</label>
+                        <select id="tonnageSort"
+                            class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-[11px] font-semibold text-slate-800">
+                            <option value="none">Default</option>
+                            <option value="asc">Asc (terkecil → terbesar)</option>
+                            <option value="desc">Desc (terbesar → terkecil)</option>
+                        </select>
+                    </div>
+                    <p
+                        class="rounded-lg bg-sky-50 border border-sky-200 px-2.5 py-1.5 text-[11px] font-medium text-sky-900">
+                        Seret (drag) kartu kontainer ke slot Bay yang kosong atau tukar posisi.
+                    </p>
+                </div>
+
+                <div id="availableContainerCards" class="flex-1 overflow-y-auto space-y-2 pr-0.5 pb-2">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Workspace Content (Prioritaskan area Bay pada Tablet & Desktop) -->
+        <main
+            class="relative flex min-w-0 flex-1 flex-col gap-2.5 p-2.5 sm:p-3 lg:h-screen lg:overflow-hidden lg:p-4 print:block print:h-auto print:overflow-visible print:p-0">
+            <!-- Header: Show Sidebar Icon + Nav Bay -->
+            <header
+                class="flex items-center justify-between gap-2 shrink-0 rounded-2xl border border-slate-200 bg-white px-2.5 py-2 sm:px-3.5 sm:py-2.5 shadow-md print:hidden">
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <!-- Tablet Toggle Sidebar Button (768px - 1023px) -->
+                    <button type="button" id="tabletSidebarBtn" title="Buka Menu & List Container"
+                        class="hidden md:flex lg:hidden h-8 items-center gap-1.5 rounded-lg border border-slate-300 bg-slate-100 px-2.5 text-xs font-bold text-slate-800 transition hover:bg-sky-600 hover:border-sky-600 hover:text-white active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <span>Menu</span>
+                    </button>
+
+                    <!-- Desktop Show Sidebar Button (saat sidebar di-hide pada >= 1024px) -->
+                    <button type="button" id="showSidebarBtn" title="Tampilkan Sidebar"
+                        class="hidden h-8 w-8 items-center justify-center rounded-lg border border-slate-300 bg-slate-100 text-slate-800 transition hover:bg-sky-600 hover:border-sky-600 hover:text-white active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <span
+                        class="rounded-lg flex items-center py-1.5 sm:py-2 bg-slate-900 px-2 sm:px-2.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white shrink-0">
+                        STERN &#9664;
+                    </span>
+
+                </div>
+
+                <nav id="bayNavButtons" aria-label="Navigasi Bay"
+                    class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-0.5"></nav>
+
+                <span
+                    class="rounded-lg flex items-center py-1.5 sm:py-2 bg-slate-900 px-2 sm:px-2.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white">
+                    BOW &#9654;
+                </span>
+            </header>
+
+            <!-- All Bays Horizontal Scroll Area -->
+            <section id="bays"
+                class="flex min-h-0 flex-1 flex-row items-stretch gap-3 sm:gap-4 overflow-x-auto overflow-y-auto pb-2 print:mt-2 print:grid print:grid-cols-2 print:gap-2 print:overflow-visible print:pb-0">
+            </section>
+
+            <!-- Trash Drop Zone (Muncul di bawah saat drag container yang sudah ada di Bay) -->
+            <div id="trashDropZone"
+                class="pointer-events-none fixed inset-x-4 bottom-4 z-40 hidden items-center justify-center print:hidden">
+                <div id="trashDropTarget"
+                    class="pointer-events-auto flex w-full max-w-md items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-red-400 bg-red-600/95 px-6 py-4 text-white shadow-2xl backdrop-blur-sm transition-all duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <div class="text-left">
+                        <p class="text-xs sm:text-sm font-extrabold tracking-wide uppercase">Buang Kontainer dari Bay
+                        </p>
+                        <p class="text-[11px] font-medium text-red-100">Lepaskan di sini untuk menghapus posisi muatan
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form Kontainer -->
+    <div id="modal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:hidden">
+        <div
+            class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
+            <div class="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <span id="modalBadge"
+                        class="inline-block rounded-lg bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold text-sky-900">
+                        CELL
+                    </span>
+                    <h3 id="modalTitle" class="mt-1 text-base font-extrabold text-slate-900">Data Kontainer</h3>
+                </div>
+                <button type="button" id="closeModalIconBtn"
+                    class="rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    aria-label="Tutup">
+                    &#x2715;
+                </button>
+            </div>
+
+            <form id="containerForm">
+                <input type="hidden" id="recordId">
+                <input type="hidden" id="fBay">
+                <input type="hidden" id="fSlot">
+
+                <!-- Source Mode Tabs -->
+                <div id="sourceChooser" class="mb-4">
+                    <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+                        <button type="button" id="showDatabaseBtn"
+                            class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-sky-700 shadow-sm transition">
+                            Database Google Sheets
+                        </button>
+                        <button type="button" id="showManualBtn"
+                            class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 transition hover:text-slate-900">
+                            Input Manual
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Google Sheets Panel -->
+                <div id="databasePanel" class="hidden space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <label for="dbSearch" class="text-xs font-bold text-slate-700">Cari Nomor Kontainer</label>
+                        <input id="dbSearch" placeholder="Ketik nomor kontainer..."
+                            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label for="dbSelect" class="text-xs font-bold text-slate-700">Pilih dari Daftar
+                            Database</label>
+                        <select id="dbSelect" size="6"
+                            class="w-full rounded-xl border border-slate-300 bg-white p-2 text-xs text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                            <option value="">Memuat data...</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <p id="dbStatus" class="text-xs text-slate-500"></p>
+                        <button type="button" id="reloadDbBtn"
+                            class="shrink-0 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-sm transition hover:bg-slate-100">
+                            Muat Ulang
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Input / Edit Panel -->
+                <div id="manualPanel" class="hidden">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label for="fLoadingPort" class="mb-1 block text-xs font-bold text-slate-700">Pelabuhan
+                                Awal</label>
+                            <select id="fLoadingPort" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <option value="">Pilih lokasi</option>
+                                <option value="SUB">Surabaya (SUB)</option>
+                                <option value="WGP">Waingapu (WGP)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fPort" class="mb-1 block text-xs font-bold text-slate-700">Pelabuhan
+                                Tujuan</label>
+                            <select id="fPort" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <option value="">Pilih lokasi</option>
+                                <option value="SUB">Surabaya (SUB)</option>
+                                <option value="WGP">Waingapu (WGP)</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="fNumber" class="mb-1 block text-xs font-bold text-slate-700">Nomor
+                                Kontainer</label>
+                            <input id="fNumber" placeholder="Contoh: TGHU123456-7" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-sm font-semibold text-slate-900 uppercase focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                        </div>
+                        <div>
+                            <label for="fType" class="mb-1 block text-xs font-bold text-slate-700">Type
+                                Container</label>
+                            <select id="fType" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <option value="DC">DC</option>
+                                <option value="HC">HC</option>
+                                <option value="RF">RF</option>
+                                <option value="OD">OD</option>
+                                <option value="FR">FR</option>
+                                <option value="TK">TK</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fFeet" class="mb-1 block text-xs font-bold text-slate-700">Ukuran (Feet)</label>
+                            <select id="fFeet" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <option value="20 FT">20 FT</option>
+                                <option value="40 FT">40 FT</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fWeight" class="mb-1 block text-xs font-bold text-slate-700">Berat Total 1 Unit
+                                (Ton)</label>
+                            <input id="fWeight" type="number" min="0" step="0.01" placeholder="0.00" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                        </div>
+
+                        <!-- Arah 40 FT (Depan / Belakang) -->
+                        <div id="dir40Container"
+                            class="hidden sm:col-span-2 rounded-xl border border-amber-300 bg-amber-50/80 p-3">
+                            <div class="mb-2 flex items-center justify-between gap-2">
+                                <label class="text-xs font-extrabold text-amber-950">Arah Penempatan 40 FT (2
+                                    Bay)</label>
+                                <span
+                                    class="rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-950">Berat
+                                    dibagi 2</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label id="dirForwardLabel"
+                                    class="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 transition hover:bg-amber-100/60">
+                                    <input type="radio" name="f40Dir" id="dirForward" value="forward"
+                                        class="accent-amber-600">
+                                    <span id="dirForwardText">Ke Depan (menuju Bay 01)</span>
+                                </label>
+                                <label id="dirBackwardLabel"
+                                    class="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 transition hover:bg-amber-100/60">
+                                    <input type="radio" name="f40Dir" id="dirBackward" value="backward"
+                                        class="accent-amber-600">
+                                    <span id="dirBackwardText">Ke Belakang (menuju Bay 13)</span>
+                                </label>
+                            </div>
+                            <p id="dir40Preview" class="mt-2 text-[11px] font-semibold text-amber-900"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                    <button type="button" id="deleteBtn"
+                        class="hidden rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 shadow-sm transition hover:bg-amber-100">
+                        Hapus Kontainer
+                    </button>
+                    <div class="ml-auto flex gap-2">
+                        <button type="button" id="cancelModalBtn"
+                            class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-100">
+                            Batal
+                        </button>
+                        <button type="submit" id="saveContainerBtn"
+                            class="rounded-xl bg-sky-600 px-5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-sky-700">
+                            Simpan Data
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/ui-state.js"></script>
+    <script src="js/stowage-rules.js"></script>
+    <script src="js/drag-state.js"></script>
+    <script src="js/calculations-utils.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/app.js"></script>\n    <script src="js/cloud-sync.js"></script>
+</body>
+
+</html>
