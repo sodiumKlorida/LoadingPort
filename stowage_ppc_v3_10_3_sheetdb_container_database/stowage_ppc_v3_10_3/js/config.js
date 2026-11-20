@@ -1,5 +1,5 @@
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSBUPaF4x5uLIQFlcBPrWmC5G8ZVe1WwBlU0xRT70OrpjeoA5c0QuZCdUfYR8yrDOETb-wiqrqSg2fy/pub?gid=831792460&single=true&output=csv';
-const DB_CACHE_KEY = 'stowageGoogleSheetCache';
+const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/uk78l777buob7?sheet=CONTAINER_DATABASE';
+const DB_CACHE_KEY = 'stowageSheetDbCacheV2';
 
 let databaseRows = [];
 let selectedDatabaseRow = null;

@@ -28,3 +28,15 @@
 ## Animasi pertukaran kontainer
 - Setelah konfirmasi pertukaran disetujui, kedua kontainer bergerak menuju posisi baru.
 - Durasi animasi diatur menjadi 2 detik (2000 ms) melalui `animateSwapGlide()` di `js/calculations-utils.js`.
+
+## Koneksi database SheetDB
+- Endpoint: `https://sheetdb.io/api/v1/havitus7q8grs?sheet=DATABASE_CONTAINER`
+- Pengambilan data memakai `fetch` GET dengan `mode: 'cors'` dan respons JSON.
+- Header kolom yang dikenali: `Nomor Container`, `Pelabuhan Awal`, `Pelabuhan Tujuan`, `Berat`, dan `Feet`.
+- Jangan mengganti `mode: 'cors'` menjadi `no-cors`; mode tersebut membuat respons tidak dapat dibaca JavaScript.
+
+## Database SheetDB terbaru
+- Endpoint: `https://sheetdb.io/api/v1/uk78l777buob7?sheet=CONTAINER_DATABASE`
+- Nama sheet yang dipanggil: `CONTAINER_DATABASE`.
+- Struktur kolom mengikuti JSON contoh: `Nomor Container`, `Pelabuhan Awal`, `Pelabuhan Tujuan`, `Berat`, `Feet`.
+- Cache browser diperbarui ke versi V2 agar cache dari endpoint/sheet sebelumnya tidak dipakai.

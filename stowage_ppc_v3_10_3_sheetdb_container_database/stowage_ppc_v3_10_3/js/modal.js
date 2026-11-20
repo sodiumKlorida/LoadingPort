@@ -165,56 +165,88 @@ async function loadDatabase(forceRefresh = false) {
     const status = $('dbStatus');
     const select = $('dbSelect');
 
-    if (!GOOGLE_SHEET_CSV_URL || GOOGLE_SHEET_CSV_URL.includes('TEMPEL_TAUTAN_CSV')) {
-        if (status) status.textContent = 'Tautan CSV Google Sheets belum dikonfigurasi.';
-        if (select) select.innerHTML = '<option value="">Tautan CSV belum dikonfigurasi</option>';
+    if (!SHEETDB_API_URL) {
+        if (status) status.textContent = 'URL SheetDB belum dikonfigurasi.';
+        if (select) select.innerHTML = '<option value="">URL SheetDB belum dikonfigurasi</option>';
         return;
     }
 
     if (!forceRefresh) {
         const cached = sessionStorage.getItem(DB_CACHE_KEY);
         if (cached) {
-            databaseRows = JSON.parse(cached);
-            filterDatabase();
-            if (status) status.textContent = `${databaseRows.length} data kontainer siap dipilih.`;
-            return;
+            try {
+                databaseRows = JSON.parse(cached);
+                filterDatabase();
+                if (status) status.textContent = `${databaseRows.length} data kontainer siap dipilih (cache).`;
+                return;
+            } catch (cacheError) {
+                sessionStorage.removeItem(DB_CACHE_KEY);
+            }
         }
     }
 
-    if (status) status.textContent = 'Mengambil data dari Google Sheets...';
+    if (status) status.textContent = 'Mengambil data dari SheetDB (CONTAINER_DATABASE)...';
     if (select) select.innerHTML = '<option value="">Memuat...</option>';
 
     try {
-        const separator = GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?';
-        const fetchUrl = forceRefresh ? `${GOOGLE_SHEET_CSV_URL}${separator}t=${Date.now()}` : GOOGLE_SHEET_CSV_URL;
+        // SheetDB mengembalikan JSON. mode:'cors' meminta browser memproses
+        // header Access-Control-Allow-Origin dari server; jangan gunakan no-cors
+        // karena respons opaque tidak bisa dibaca oleh JavaScript.
+        const url = new URL(SHEETDB_API_URL);
+        url.searchParams.set('sheet', 'CONTAINER_DATABASE');
+        if (forceRefresh) url.searchParams.set('_', String(Date.now()));
 
-        const response = await fetch(fetchUrl, { method: 'GET' });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            mode: 'cors',
+            headers: { 'Accept': 'application/json' },
+            cache: forceRefresh ? 'no-store' : 'default'
+        });
 
-        const csvText = await response.text();
-        if (csvText.trim().startsWith('<!DOCTYPE') || csvText.trim().startsWith('<html')) {
-            throw new Error('Tautan menghasilkan halaman HTML, pastikan format publikasi dipilih sebagai CSV (.csv).');
+        if (!response.ok) {
+            const detail = await response.text().catch(() => '');
+            throw new Error(`SheetDB HTTP ${response.status}${detail ? ': ' + detail.slice(0, 180) : ''}`);
         }
 
-        const parsedRows = parseCSV(csvText);
-        databaseRows = parsedRows
-            .map((r, i) => ({
-                raw: r,
+        const payload = await response.json();
+        if (!Array.isArray(payload)) {
+            throw new Error('Format respons SheetDB tidak sesuai: seharusnya JSON berupa array baris.');
+        }
+
+        // Normalisasi nama kolom agar aman terhadap kapitalisasi/spasi header SheetDB.
+        const getField = (row, names) => {
+            const normalized = {};
+            Object.keys(row || {}).forEach((key) => {
+                normalized[String(key).trim().toLowerCase()] = row[key];
+            });
+            for (const name of names) {
+                const value = normalized[name.toLowerCase()];
+                if (value !== undefined && value !== null) return value;
+            }
+            return '';
+        };
+
+        databaseRows = payload
+            .map((row, i) => ({
+                raw: row,
                 index: i,
-                number: String(r['nomor container'] ?? '').trim(),
-                loadingPort: normalizePort(r['pelabuhan awal']),
-                port: normalizePort(r['pelabuhan tujuan']),
-                weight: String(r['berat'] ?? '').replace(',', '.').trim(),
-                feet: String(r['feet'] ?? '20 FT').trim().toUpperCase()
+                number: String(getField(row, ['Nomor Container', 'Nomor Kontainer', 'Container Number'])).trim(),
+                loadingPort: normalizePort(String(getField(row, ['Pelabuhan Awal', 'Loading Port'])).trim()),
+                port: normalizePort(String(getField(row, ['Pelabuhan Tujuan', 'Port of Destination', 'Discharge Port'])).trim()),
+                weight: String(getField(row, ['Berat', 'Weight'])).replace(',', '.').trim(),
+                feet: String(getField(row, ['Feet', 'Ukuran', 'Size']) || '20 FT').trim().toUpperCase()
             }))
-            .filter((r) => r.number);
+            .filter((row) => row.number);
 
         sessionStorage.setItem(DB_CACHE_KEY, JSON.stringify(databaseRows));
         filterDatabase();
-        if (status) status.textContent = `${databaseRows.length} data kontainer dimuat.`;
+        if (status) status.textContent = `${databaseRows.length} data kontainer dimuat dari SheetDB.`;
     } catch (err) {
-        console.error(err);
-        if (status) status.textContent = 'Gagal memuat: ' + err.message;
+        console.error('SheetDB load error:', err);
+        const message = err instanceof TypeError
+            ? 'Gagal mengakses SheetDB. Periksa koneksi internet dan izin CORS dari SheetDB; jangan membuka file melalui mode no-cors.'
+            : err.message;
+        if (status) status.textContent = 'Gagal memuat: ' + message;
         if (select) select.innerHTML = '<option value="">Data tidak dapat dimuat</option>';
     }
 }

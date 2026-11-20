@@ -148,7 +148,7 @@ function animateSwapGlide(fromRectA, toElA, fromRectB, toElB, durationMs = 2000)
             }
             .swap-glide-anim {
                 animation-name: swapGlideToTarget;
-                animation-duration: var(--swap-duration, 500ms);
+                animation-duration: var(--swap-duration, 2000ms);
                 animation-timing-function: cubic-bezier(0.22, 0.75, 0.25, 1);
                 animation-fill-mode: both;
                 will-change: transform, filter;
@@ -190,7 +190,7 @@ function animateSwapGlide(fromRectA, toElA, fromRectB, toElB, durationMs = 2000)
         };
 
         to.addEventListener('animationend', cleanup, { once: true });
-        setTimeout(cleanup, durationMs + 50);
+        setTimeout(cleanup, durationMs + 100);
     });
 }
 
