@@ -72,10 +72,23 @@ function updateHeaderMeta() {
     const ship = ($('shipName')?.value || 'PRAKASA PACIFIC').trim();
     const voy = ($('voyage')?.value || '').trim();
     const date = ($('stowageDate')?.value || '').trim();
-    const label = [ship, voy, date].filter(Boolean).join(' · ');
+    const loading = ($('stowageLoadingPort')?.value || '').trim().toUpperCase();
+    const destination = ($('stowageDestinationPort')?.value || '').trim().toUpperCase();
+    const label = [ship, voy, date, loading && `${loading} → ${destination}`].filter(Boolean).join(' · ');
 
     if ($('printSubtitle')) $('printSubtitle').textContent = label;
     if ($('mobileShipSub')) $('mobileShipSub').textContent = label;
+}
+
+function updateStowageContext() {
+    const ship = ($('shipName')?.value || 'PRAKASA PACIFIC').trim();
+    const voyage = ($('voyage')?.value || '').trim();
+    const date = ($('stowageDate')?.value || '').trim();
+    const loading = ($('stowageLoadingPort')?.value || '').trim().toUpperCase();
+    const destination = ($('stowageDestinationPort')?.value || '').trim().toUpperCase();
+    const parts = [ship, voyage, date, loading && destination ? `${loading} → ${destination}` : ''];
+    const el = $('stowageContextText');
+    if (el) el.textContent = parts.filter(Boolean).join(' · ') || 'Informasi stowage belum diisi';
 }
 
 function save() {
@@ -85,10 +98,19 @@ function save() {
     safeStorageSet('stowageShip', $('shipName').value);
     safeStorageSet('stowageVoyage', $('voyage').value);
     safeStorageSet('stowageDate', $('stowageDate')?.value || '');
+    safeStorageSet('stowageLoadingPort', $('stowageLoadingPort')?.value || '');
+    safeStorageSet('stowageDestinationPort', $('stowageDestinationPort')?.value || '');
 
     updateHeaderMeta();
+    updateStowageContext();
     updateSummary();
     renderAvailableContainerCards();
+
+    // Sinkronkan setiap perubahan posisi ke Google Sheets.
+    // Jika koneksi belum siap, perubahan akan diantrikan oleh cloud-sync.js.
+    if (typeof queueCloudSave === 'function') {
+        queueCloudSave();
+    }
 
     if (!storageOk && !storageWarningShown) {
         storageWarningShown = true;
@@ -99,7 +121,10 @@ function save() {
 $('shipName').value = safeStorageGet('stowageShip') || 'PRAKASA PACIFIC';
 $('voyage').value = safeStorageGet('stowageVoyage') || '';
 if ($('stowageDate')) $('stowageDate').value = safeStorageGet('stowageDate') || '';
+if ($('stowageLoadingPort')) $('stowageLoadingPort').value = safeStorageGet('stowageLoadingPort') || '';
+if ($('stowageDestinationPort')) $('stowageDestinationPort').value = safeStorageGet('stowageDestinationPort') || '';
 updateHeaderMeta();
+updateStowageContext();
 
 function bayLabel(b) {
     return b === 'AH' ? 'AFTER HATCH' : `BAY ${String(b).padStart(2, '0')}`;

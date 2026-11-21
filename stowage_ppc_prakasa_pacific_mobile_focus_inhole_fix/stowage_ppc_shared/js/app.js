@@ -3,6 +3,33 @@ $('printPdfBtn').addEventListener('click', printStowage);
 $('mobilePrintBtn').addEventListener('click', printStowage);
 $('mobileSidebarBtn').addEventListener('click', openMobileSidebar);
 $('tabletSidebarBtn')?.addEventListener('click', openMobileSidebar);
+
+// Mode fokus layar penuh untuk pekerjaan lapangan di tablet/ponsel.
+const focusBtn = $('mobileFocusBtn');
+async function toggleBayFocus() {
+    const active = document.body.classList.contains('bay-focus-mode');
+    if (active) {
+        document.body.classList.remove('bay-focus-mode');
+        if (document.fullscreenElement && document.exitFullscreen) {
+            try { await document.exitFullscreen(); } catch (_) {}
+        }
+        if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Fokus Bay';
+        return;
+    }
+    document.body.classList.add('bay-focus-mode');
+    if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Keluar Fokus';
+    const root = document.documentElement;
+    if (root.requestFullscreen) {
+        try { await root.requestFullscreen(); } catch (_) { /* CSS focus mode tetap aktif */ }
+    }
+}
+focusBtn?.addEventListener('click', toggleBayFocus);
+document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && document.body.classList.contains('bay-focus-mode')) {
+        document.body.classList.remove('bay-focus-mode');
+        if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Fokus Bay';
+    }
+});
 $('closeSidebarBtn').addEventListener('click', closeMobileSidebar);
 $('sidebarBackdrop').addEventListener('click', closeMobileSidebar);
 
@@ -171,7 +198,8 @@ $('bays').addEventListener('drop', (e) => {
                 loadingPort: currentDrag.container.loadingPort,
                 port: currentDrag.container.port,
                 weight: currentDrag.container.weight,
-                dir40: 'backward'
+                type: currentDrag.container.type || 'DC',
+                dir40: 'forward'
             }
         : null;
 
@@ -263,6 +291,11 @@ $('bays').addEventListener('drop', (e) => {
         });
     } else if (currentDrag.source === 'pool') {
         const c = currentDrag.container;
+        const duplicate = records.find((r) => String(r.number || '').trim().toUpperCase() === String(c.number || '').trim().toUpperCase());
+        if (duplicate) {
+            alert(`Kontainer ${c.number} sudah berada di ${bayLabel(duplicate.bay)} · ${getCellNo(duplicate.bay, duplicate.slot)}.`);
+            return;
+        }
         const is40 = c.feet.includes('40');
         const newItem = {
             id: String(Date.now()) + '-' + Math.random().toString(16).slice(2),
@@ -275,6 +308,7 @@ $('bays').addEventListener('drop', (e) => {
             port: normalizePort(c.port),
             loadingPort: normalizePort(c.loadingPort),
             weight: c.weight,
+            type: c.type || 'DC',
             mov: 1
         };
         records.push(newItem);
@@ -293,6 +327,9 @@ $('bays').addEventListener('dragend', () => {
 
 $('shipName').addEventListener('input', save);
 $('voyage').addEventListener('input', save);
+$('stowageDate')?.addEventListener('change', save);
+$('stowageLoadingPort')?.addEventListener('change', save);
+$('stowageDestinationPort')?.addEventListener('change', save);
 $('clearAllBtn').addEventListener('click', clearAll);
 
 $('showDatabaseBtn').addEventListener('click', showDatabase);

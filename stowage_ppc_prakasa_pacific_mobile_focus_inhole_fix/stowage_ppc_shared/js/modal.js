@@ -396,6 +396,11 @@ function submitContainer(e) {
     }
 
     const old = id ? records.find((x) => x.id === id) : null;
+    const duplicate = records.find((x) => x.id !== id && String(x.number || '').trim().toUpperCase() === number);
+    if (duplicate) {
+        alert(`Kontainer ${number} sudah ditempatkan di ${bayLabel(duplicate.bay)} · ${getCellNo(duplicate.bay, duplicate.slot)}.`);
+        return;
+    }
     const item = {
         id: id || String(Date.now()) + '-' + Math.random().toString(16).slice(2),
         bay,

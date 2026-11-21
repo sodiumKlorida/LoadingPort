@@ -10,7 +10,7 @@ let cloudPollHandle = null;
 
 const CLOUD_COLUMNS = [
   'id','nomor_container','feet','bay','row','tier','cell_no',
-  'type','dir40','loading_port','destination_port','weight_ton','mov'
+  'type','dir40','loading_port','destination_port','weight_ton','mov','stowage_loading_port','stowage_destination_port','ship_name','voyage','stowage_date'
 ];
 
 function cloudStatus(message, isError = false) {
@@ -35,7 +35,12 @@ function recordToSheetRow(r) {
     loading_port: String(r.loadingPort || ''),
     destination_port: String(r.port || ''),
     weight_ton: String(r.weight ?? ''),
-    mov: String(r.mov ?? 1)
+    mov: String(r.mov ?? 1),
+    stowage_loading_port: String($('stowageLoadingPort')?.value || ''),
+    stowage_destination_port: String($('stowageDestinationPort')?.value || ''),
+    ship_name: String($('shipName')?.value || 'PRAKASA PACIFIC'),
+    voyage: String($('voyage')?.value || ''),
+    stowage_date: String($('stowageDate')?.value || '')
   };
 }
 
@@ -78,9 +83,26 @@ async function cloudFetch(url, method = 'GET', body = null) {
   return text ? JSON.parse(text) : [];
 }
 
+function applyCloudStowageMeta(row) {
+  if (!row) return;
+  if ($('stowageLoadingPort')) $('stowageLoadingPort').value = row.stowage_loading_port || '';
+  if ($('stowageDestinationPort')) $('stowageDestinationPort').value = row.stowage_destination_port || '';
+  if ($('shipName')) $('shipName').value = row.ship_name || $('shipName').value;
+  if ($('voyage')) $('voyage').value = row.voyage || '';
+  if ($('stowageDate')) $('stowageDate').value = row.stowage_date || '';
+  safeStorageSet('stowageLoadingPort', $('stowageLoadingPort')?.value || '');
+  safeStorageSet('stowageDestinationPort', $('stowageDestinationPort')?.value || '');
+  safeStorageSet('stowageShip', $('shipName')?.value || 'PRAKASA PACIFIC');
+  safeStorageSet('stowageVoyage', $('voyage')?.value || '');
+  safeStorageSet('stowageDate', $('stowageDate')?.value || '');
+  updateHeaderMeta();
+  updateStowageContext();
+}
+
 async function loadCloudPositions() {
   const rows = await cloudFetch(STOWAGE_SHEET_URL);
   const mapped = rows.map(sheetRowToRecord).filter(Boolean);
+  if (rows.length) applyCloudStowageMeta(rows[0]);
   records = mapped;
   cloudSnapshot = mapped.map(recordToSheetRow);
   safeStorageSet('stowageRecords', JSON.stringify(records));
@@ -104,7 +126,7 @@ async function queueCloudSave() {
       for (const [id] of before) {
         if (!after.has(id)) {
           const url = new URL(STOWAGE_SHEET_URL);
-          url.searchParams.set('id', id);
+          url.pathname = `${url.pathname}/id/${encodeURIComponent(id)}`;
           await cloudFetch(url.toString(), 'DELETE');
         }
       }
@@ -114,7 +136,7 @@ async function queueCloudSave() {
           await cloudFetch(STOWAGE_SHEET_URL, 'POST', { data: [row] });
         } else if (JSON.stringify(old) !== JSON.stringify(row)) {
           const url = new URL(STOWAGE_SHEET_URL);
-          url.searchParams.set('id', id);
+          url.pathname = `${url.pathname}/id/${encodeURIComponent(id)}`;
           await cloudFetch(url.toString(), 'PUT', { data: row });
         }
       }
@@ -134,6 +156,7 @@ async function pollCloudPositions() {
   if (!cloudReady || cloudBusy || cloudDirty) return;
   try {
     const rows = await cloudFetch(STOWAGE_SHEET_URL);
+    if (rows.length) applyCloudStowageMeta(rows[0]);
     const remote = rows.map(sheetRowToRecord).filter(Boolean);
     const remoteRows = remote.map(recordToSheetRow);
     if (JSON.stringify(remoteRows) !== JSON.stringify(cloudSnapshot)) {

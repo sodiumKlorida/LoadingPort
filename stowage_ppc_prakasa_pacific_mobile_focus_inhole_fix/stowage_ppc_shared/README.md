@@ -46,3 +46,11 @@ Print diatur A4 landscape dengan 4 panel bay per halaman, sehingga 8 panel ditar
 Versi ini memakai SheetDB sebagai penyimpanan bersama dengan polling 7 detik. Dua orang yang mengedit posisi yang sama hampir bersamaan masih dapat menghasilkan konflik (last write wins). Untuk penggunaan operasional multi-user yang kritis, backend dengan transaksi/locking dan autentikasi (mis. Supabase/Firebase) lebih aman. SheetDB API key/endpoint write yang tertanam di frontend dapat dilihat oleh visitor; batasi akses sesuai kemampuan paket SheetDB Anda.
 
 Sebelum penggunaan produksi, uji tambah, edit, hapus, 40 FT, dan buka URL dari dua perangkat/browser sekaligus.
+
+
+## Revisi mode lapangan dan informasi voyage
+- Tombol **Fokus Bay** mengaktifkan fullscreen browser (jika didukung) dan menyembunyikan sidebar agar navigasi Bay serta konten Bay menjadi fokus.
+- Main Menu kini memiliki Pelabuhan Awal dan Pelabuhan Tujuan.
+- Tambahkan kolom berikut pada tab `STOWAGE_POSITIONS` setelah kolom `mov`: `stowage_loading_port`, `stowage_destination_port`, `ship_name`, `voyage`, `stowage_date`. Informasi voyage disimpan bersama setiap posisi agar dapat dibaca perangkat lain.
+- Kontainer yang sudah ditempatkan otomatis hilang dari list tersedia; saat dihapus dari Bay, akan muncul kembali. Nomor kontainer duplikat juga ditolak.
+- Print CSS diperbaiki agar panel tidak memotong bagian IN HOLE. Tetap pilih A4 Landscape dan aktifkan Background graphics saat menyimpan PDF.
