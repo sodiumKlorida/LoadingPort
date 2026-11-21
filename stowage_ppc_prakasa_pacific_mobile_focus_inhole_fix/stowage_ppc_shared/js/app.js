@@ -13,11 +13,11 @@ async function toggleBayFocus() {
         if (document.fullscreenElement && document.exitFullscreen) {
             try { await document.exitFullscreen(); } catch (_) {}
         }
-        if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Fokus Bay';
+        if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = '⛶';
         return;
     }
     document.body.classList.add('bay-focus-mode');
-    if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Keluar Fokus';
+    if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'X';
     const root = document.documentElement;
     if (root.requestFullscreen) {
         try { await root.requestFullscreen(); } catch (_) { /* CSS focus mode tetap aktif */ }
