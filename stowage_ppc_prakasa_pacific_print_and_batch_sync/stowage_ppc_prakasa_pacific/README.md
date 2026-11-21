@@ -54,3 +54,29 @@ Sebelum penggunaan produksi, uji tambah, edit, hapus, 40 FT, dan buka URL dari d
 - Tambahkan kolom berikut pada tab `STOWAGE_POSITIONS` setelah kolom `mov`: `stowage_loading_port`, `stowage_destination_port`, `ship_name`, `voyage`, `stowage_date`. Informasi voyage disimpan bersama setiap posisi agar dapat dibaca perangkat lain.
 - Kontainer yang sudah ditempatkan otomatis hilang dari list tersedia; saat dihapus dari Bay, akan muncul kembali. Nomor kontainer duplikat juga ditolak.
 - Print CSS diperbaiki agar panel tidak memotong bagian IN HOLE. Tetap pilih A4 Landscape dan aktifkan Background graphics saat menyimpan PDF.
+
+### Perbaikan preview cetak
+Versi ini memperbaiki tata letak cetak A4 landscape: setiap halaman memuat empat panel Bay (dua kolom × dua baris), tinggi panel dibuat konsisten, dan isi panel dibatasi agar tidak menimpa panel di bawahnya. Pada dialog cetak, gunakan ukuran kertas A4, orientasi Landscape, skala 100% atau Default, dan matikan Headers and footers.
+
+
+## Mode sinkronisasi manual (hemat kuota SheetDB)
+- Sinkronisasi posisi tidak lagi berjalan otomatis setiap 7 detik.
+- Saat halaman dibuka, aplikasi melakukan satu kali GET untuk mengambil posisi terakhir dari tab `STOWAGE_POSITIONS`.
+- Setiap perubahan penempatan, pertukaran, edit, atau penghapusan disimpan lokal dan ditandai belum tersinkron; tidak mengirim request.
+- Tekan tombol **Sinkronkan** pada panel List Container:
+  - Jika ada perubahan lokal, aplikasi mengirim perubahan (POST/PUT/DELETE) ke `STOWAGE_POSITIONS`.
+  - Jika tidak ada perubahan lokal, aplikasi mengambil update terbaru dari server (GET).
+- Pengguna perangkat lain perlu menekan **Sinkronkan** untuk mengambil perubahan terbaru.
+- Tab `CONTAINER_DATABASE` tetap menjadi sumber daftar kontainer. Data sumber dimuat ketika daftar dibuka dan menggunakan cache sesi browser.
+- Catatan: perubahan lokal yang belum dikirim hanya ada di browser/perangkat tersebut. Tekan Sinkronkan sebelum berpindah perangkat atau menutup sesi.
+
+
+## Sinkronisasi hemat kuota: snapshot batch
+Sinkronisasi manual sekarang mengirim satu snapshot lengkap melalui satu POST SheetDB, bukan satu request per kontainer. Snapshot lama tidak dihapus sehingga jika koneksi terputus saat upload, snapshot sebelumnya tetap aman. Saat membaca data, aplikasi memilih snapshot terbaru.
+Tambahkan tiga header berikut di tab `STOWAGE_POSITIONS`:
+- `snapshot_id`
+- `record_kind`
+- `snapshot_time`
+Baris marker snapshot menggunakan `record_kind=SNAPSHOT`; baris kontainer menggunakan `record_kind=CONTAINER`. Data lama tanpa penanda snapshot tetap dibaca sebagai data legacy sampai snapshot pertama tersimpan.
+Setiap klik Sinkronkan yang mengirim perubahan = 1 request. Saat perangkat lain mengambil data = 1 GET request. Pembukaan aplikasi juga melakukan GET untuk memuat posisi awal.
+Snapshot lama akan menumpuk di sheet; bersihkan/arsipkan snapshot lama secara berkala setelah memastikan snapshot terbaru sudah benar.

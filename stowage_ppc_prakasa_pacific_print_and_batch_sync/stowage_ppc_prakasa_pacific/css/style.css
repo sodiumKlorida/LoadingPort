@@ -1,0 +1,239 @@
+@keyframes swapGlideToTarget {
+    0% { transform: translate3d(var(--swap-dx, 0px), var(--swap-dy, 0px), 0) scale(1.04); z-index: 35; box-shadow: 0 18px 30px -8px rgba(15, 23, 42, 0.28); }
+    100% { transform: translate3d(0, 0, 0) scale(1); z-index: 10; box-shadow: none; }
+}
+.swap-glide-anim { animation: swapGlideToTarget 1000ms cubic-bezier(0.22, 1, 0.36, 1) both; will-change: transform; }
+
+/* PRINT: A4 landscape, 4 panel per halaman, tanpa elemen panel saling menimpa. */
+@page { size: A4 landscape; margin: 5mm; }
+@media print {
+    *, *::before, *::after { box-sizing: border-box !important; }
+    html, body {
+        width: 100% !important; height: auto !important; min-height: 0 !important;
+        margin: 0 !important; padding: 0 !important; overflow: visible !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    body { display: block !important; }
+    #printHeader { display: flex !important; margin: 0 0 2mm !important; padding: 1mm 2mm 2mm !important; }
+    #appRoot, #mainWorkspace, main, section { overflow: visible !important; }
+    #mainWorkspace { display: block !important; width: 100% !important; height: auto !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; }
+    #bays {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-auto-rows: 91mm !important;
+        align-content: start !important;
+        align-items: stretch !important;
+        column-gap: 3mm !important; row-gap: 3mm !important;
+        width: 100% !important; height: auto !important; min-height: 0 !important;
+        margin: 0 !important; padding: 0 !important;
+        overflow: visible !important;
+    }
+    .bay-panel {
+        display: flex !important; flex-direction: column !important;
+        width: 100% !important; min-width: 0 !important;
+        height: 91mm !important; min-height: 91mm !important; max-height: 91mm !important;
+        margin: 0 !important; padding: 0 !important;
+        overflow: hidden !important;
+        break-inside: avoid !important; page-break-inside: avoid !important;
+        border: 0.25mm solid #334155 !important; border-radius: 2mm !important;
+        box-shadow: none !important;
+    }
+    .bay-panel:nth-child(4n + 1):not(:first-child) {
+        break-before: page !important; page-break-before: always !important;
+    }
+    .bay-panel > div:first-child {
+        flex: 0 0 9mm !important; min-height: 9mm !important;
+        padding: 1mm 2mm !important;
+    }
+    .bay-panel > div:nth-child(2) {
+        flex: 1 1 auto !important; min-height: 0 !important;
+        max-height: none !important; overflow: hidden !important;
+    }
+    /* Bay reguler memiliki area On Deck, Cover, dan In Hole; bagi ruangnya secara eksplisit. */
+    .bay-panel:not(#panel-13):not(#panel-AH) > div:nth-child(2) {
+        display: flex !important; flex-direction: column !important;
+    }
+    .bay-panel:not(#panel-13):not(#panel-AH) > div:nth-child(2) > div:first-child,
+    .bay-panel:not(#panel-13):not(#panel-AH) > div:nth-child(2) > div:last-child {
+        flex: 1 1 0 !important; min-height: 0 !important;
+    }
+    .bay-panel:not(#panel-13):not(#panel-AH) > div:nth-child(2) > div:nth-child(2) {
+        flex: 0 0 3mm !important; min-height: 3mm !important;
+    }
+    .bay-panel .slot-card {
+        min-width: 0 !important; min-height: 0 !important;
+        height: 14mm !important; max-height: 14mm !important;
+        overflow: hidden !important; border-radius: 1mm !important;
+    }
+    .bay-panel .slot-card > div:nth-child(2) { min-height: 0 !important; overflow: hidden !important; }
+    .bay-panel .slot-card > div:first-child { padding: 0.5mm 1mm !important; }
+    .bay-panel .slot-card > div:last-child { min-height: 4mm !important; padding: 0.5mm 1mm !important; }
+    .bay-panel aside { min-height: 0 !important; height: auto !important; max-height: 100% !important; }
+    .bay-panel aside > div { min-height: 0 !important; height: auto !important; padding: 1.5mm !important; }
+    .bay-panel section { min-height: 0 !important; overflow: hidden !important; }
+    .bay-panel section > div { min-height: 0 !important; }
+    .bay-panel .grid.grid-rows-2 { min-height: 0 !important; }
+    .bay-panel .bay-panel-content { min-height: 0 !important; }
+    #bayNavButtons, #stowageContextBar, #trashDropZone, #appSidebar,
+    #mobileTopBar, #mobilePrintBtn, #printPdfBtn, .print\\:hidden { display: none !important; }
+    .bay-panel h2 { font-size: 8pt !important; line-height: 1 !important; }
+    .bay-panel .text-xs { line-height: 1.1 !important; }
+}
+
+/* Mode fokus Bay untuk perangkat lapangan */
+@media (max-width: 1023px) {
+    body.bay-focus-mode { overflow: hidden !important; }
+    body.bay-focus-mode #appSidebar,
+    body.bay-focus-mode #sidebarBackdrop,
+    body.bay-focus-mode #stowageContextBar { display: none !important; }
+    body.bay-focus-mode #mainWorkspace {
+        position: fixed !important; inset: 0 !important; z-index: 100 !important;
+        width: 100vw !important; height: 100dvh !important; max-height: 100dvh !important;
+        padding: max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom)) !important;
+        background: #f1f5f9 !important; overflow: hidden !important; gap: 6px !important;
+    }
+    body.bay-focus-mode #mainWorkspace > header { flex: 0 0 auto !important; min-height: 44px !important; padding: 5px !important; }
+    body.bay-focus-mode #mainWorkspace #bayNavButtons { flex: 1 1 auto !important; min-width: 0 !important; }
+    body.bay-focus-mode #mainWorkspace #bays {
+        flex: 1 1 0 !important; min-height: 0 !important; width: 100% !important;
+        overflow: auto !important; padding-bottom: 4px !important; overscroll-behavior: contain;
+    }
+    body.bay-focus-mode #mobileFocusBtn { background: #0f172a !important; color: white !important; border-color: #334155 !important; white-space: nowrap; }
+    body.bay-focus-mode #mobileFocusBtn .focus-btn-label { font-size: 10px; }
+}
+
+
+/* PRINT LAYOUT V2: page grouping eksplisit, 4 Bay per halaman. */
+#printPages { display: none; }
+@page { size: A4 landscape; margin: 5mm; }
+@media print {
+  #printHeader { display: none !important; }
+  #bays { display: none !important; }
+  #printPages {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-page {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 190mm !important;
+    max-height: 190mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+  .print-page:last-child {
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+  .print-page-header {
+    display: flex !important;
+    flex: 0 0 10mm !important;
+    height: 10mm !important;
+    min-height: 10mm !important;
+    margin: 0 0 2mm !important;
+    padding: 0 2mm 1mm !important;
+    border-bottom: 0.5mm solid #0f172a !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  .print-page-header h1 { font-size: 11pt !important; line-height: 1.1 !important; }
+  .print-page-header p, .print-page-header #printSummaryLine { font-size: 7pt !important; line-height: 1.1 !important; }
+  .print-page-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 87.5mm) !important;
+    grid-auto-rows: 87.5mm !important;
+    gap: 3mm !important;
+    width: 100% !important;
+    height: 178mm !important;
+    min-height: 178mm !important;
+    max-height: 178mm !important;
+    align-content: start !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 87.5mm !important;
+    min-height: 87.5mm !important;
+    max-height: 87.5mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    border: 0.25mm solid #334155 !important;
+    border-radius: 2mm !important;
+    box-shadow: none !important;
+  }
+  .print-page-grid .bay-panel > div:first-child {
+    flex: 0 0 8mm !important;
+    min-height: 8mm !important;
+    padding: 1mm 2mm !important;
+  }
+  .print-page-grid .bay-panel > div:nth-child(2) {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 79mm !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:first-child,
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:last-child {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:nth-child(2) {
+    flex: 0 0 3mm !important;
+    min-height: 3mm !important;
+  }
+  .print-page-grid .bay-panel .slot-card {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 13mm !important;
+    max-height: 13mm !important;
+    overflow: hidden !important;
+    border-radius: 1mm !important;
+  }
+  .print-page-grid .bay-panel .slot-card > div:nth-child(2) {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0.5mm !important;
+  }
+  .print-page-grid .bay-panel .slot-card > div:first-child,
+  .print-page-grid .bay-panel .slot-card > div:last-child {
+    padding: 0.5mm 1mm !important;
+  }
+  .print-page-grid .bay-panel aside {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 100% !important;
+  }
+  .print-page-grid .bay-panel aside > div {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 1.2mm !important;
+  }
+  .print-page-grid .bay-panel section,
+  .print-page-grid .bay-panel section > div {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel h2 { font-size: 8pt !important; line-height: 1 !important; }
+  .print-page-grid .bay-panel .text-xs { line-height: 1.05 !important; }
+  .print-page-grid .bay-panel .text-sm { font-size: 7pt !important; line-height: 1.05 !important; }
+}

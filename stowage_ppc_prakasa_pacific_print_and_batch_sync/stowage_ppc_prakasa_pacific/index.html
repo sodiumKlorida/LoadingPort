@@ -37,7 +37,7 @@
     </header>
 
     <!-- Print-Only Header -->
-    <div class="hidden border-b-2 border-slate-900 px-3 py-2 print:flex print:items-center print:justify-between">
+    <div id="printHeader" class="hidden border-b-2 border-slate-900 px-3 py-2 print:flex print:items-center print:justify-between">
         <div>
             <h1 class="text-base font-extrabold tracking-wide text-slate-900">STOWAGE PLAN CONTAINER PPC</h1>
             <p id="printSubtitle" class="text-[11px] font-medium text-slate-600">KM LOTUS PACIFIC</p>
@@ -244,6 +244,10 @@
                             </h2>
                             <p id="availableDbStatus" class="text-[11px] text-slate-500">Memuat database...</p>
                             <p id="cloudSyncStatus" class="text-[10px] font-semibold text-emerald-700">Sinkronisasi posisi: menghubungkan...</p>
+                            <button type="button" id="manualCloudSyncBtn" disabled
+                                class="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-2.5 py-1.5 text-[11px] font-extrabold text-sky-800 shadow-sm transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-50">
+                                <span aria-hidden="true">↻</span> Sinkronkan
+                            </button>
                         </div>
                         <button type="button" id="refreshSidebarDbBtn" title="Muat Ulang Data"
                             class="rounded-xl border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-[11px] font-bold text-slate-700 transition hover:bg-slate-100">
@@ -315,8 +319,7 @@
 
                     <button type="button" id="mobileFocusBtn" title="Mode layar penuh area Bay"
                         class="flex h-8 items-center gap-1.5 rounded-lg border border-sky-300 bg-sky-50 px-2.5 text-xs font-bold text-sky-900 transition hover:bg-sky-100 active:scale-95">
-                        <span class="focus-btn-label" aria-hidden="true">⛶</span>
-                        <!-- <span >Fokus Bay</span> -->
+                        <span aria-hidden="true">⛶</span><span class="focus-btn-label">Fokus Bay</span>
                     </button>
 
                     <!-- Desktop Show Sidebar Button (saat sidebar di-hide pada >= 1024px) -->
@@ -330,7 +333,7 @@
 
                     <span
                         class="rounded-lg flex items-center py-1.5 sm:py-2 bg-slate-900 px-2 sm:px-2.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white shrink-0">
-                        &#9664; AJN 
+                        STERN &#9664;
                     </span>
 
                 </div>
@@ -340,7 +343,7 @@
 
                 <span
                     class="rounded-lg flex items-center py-1.5 sm:py-2 bg-slate-900 px-2 sm:px-2.5 text-[10px] sm:text-[11px] font-bold tracking-wider text-white">
-                    HLN &#9654;
+                    BOW &#9654;
                 </span>
             </header>
 
@@ -553,6 +556,7 @@
     <script src="js/modal.js"></script>
     <script src="js/app.js"></script>
     <script src="js/cloud-sync.js"></script>
+    <script src="js/print-layout.js"></script>
 </body>
 
 </html>

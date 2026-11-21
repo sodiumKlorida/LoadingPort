@@ -106,8 +106,8 @@ function save() {
     updateSummary();
     renderAvailableContainerCards();
 
-    // Sinkronkan setiap perubahan posisi ke Google Sheets.
-    // Jika koneksi belum siap, perubahan akan diantrikan oleh cloud-sync.js.
+    // Tandai perubahan lokal. Request ke SheetDB hanya dilakukan saat
+    // pengguna menekan tombol Sinkronkan.
     if (typeof queueCloudSave === 'function') {
         queueCloudSave();
     }
