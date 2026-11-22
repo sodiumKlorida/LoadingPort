@@ -497,6 +497,9 @@
   #sidebarBackdrop {
     top: 56px !important;
   }
+  #bays {
+    isolation: isolate;
+  }
   #containerDock {
     z-index: 20 !important;
   }
