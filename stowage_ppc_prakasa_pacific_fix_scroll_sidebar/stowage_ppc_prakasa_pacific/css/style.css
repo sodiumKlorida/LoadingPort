@@ -493,6 +493,13 @@
     height: 100dvh !important;
     overflow: hidden !important;
   }
+  #appSidebar,
+  #sidebarBackdrop {
+    top: 56px !important;
+  }
+  #containerDock {
+    z-index: 20 !important;
+  }
   #appRoot {
     height: calc(100dvh - 56px) !important;
   }
