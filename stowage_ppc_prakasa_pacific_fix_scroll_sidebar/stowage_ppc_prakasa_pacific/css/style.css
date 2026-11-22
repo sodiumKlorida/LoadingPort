@@ -464,8 +464,13 @@
 /* FIX TABLET/MOBILE: kunci tinggi workspace dan aktifkan scroll internal Bay. */
 @media screen {
   html, body { height: 100%; }
-  #mainWorkspace {
+  #appRoot {
     height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #mainWorkspace {
+    height: 100% !important;
     min-height: 0 !important;
     overflow: hidden !important;
   }
@@ -484,8 +489,29 @@
   #showSidebarBtn { display: none !important; }
 }
 @media screen and (max-width: 1023px) {
-  #mainWorkspace { padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
-}
-@media screen and (max-width: 767px) {
-  #mainWorkspace { height: calc(100dvh - 56px) !important; }
+  body {
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  #appRoot {
+    height: calc(100dvh - 56px) !important;
+  }
+  #mainWorkspace {
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+  .container-dock-toolbar {
+    flex-wrap: wrap;
+  }
+  .container-dock-title {
+    min-width: 100px;
+  }
+  .container-dock-search {
+    flex: 1 1 160px;
+    max-width: none;
+  }
+  .container-dock-status {
+    flex: 1 1 100%;
+    max-width: none;
+    order: 10;
+  }
 }
