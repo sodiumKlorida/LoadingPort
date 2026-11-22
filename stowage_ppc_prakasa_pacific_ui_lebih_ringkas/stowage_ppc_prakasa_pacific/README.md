@@ -69,3 +69,26 @@ Versi ini memperbaiki tata letak cetak A4 landscape: setiap halaman memuat empat
 - Pengguna perangkat lain perlu menekan **Sinkronkan** untuk mengambil perubahan terbaru.
 - Tab `CONTAINER_DATABASE` tetap menjadi sumber daftar kontainer. Data sumber dimuat ketika daftar dibuka dan menggunakan cache sesi browser.
 - Catatan: perubahan lokal yang belum dikirim hanya ada di browser/perangkat tersebut. Tekan Sinkronkan sebelum berpindah perangkat atau menutup sesi.
+
+
+## Sinkronisasi hemat kuota: snapshot batch
+Sinkronisasi manual sekarang mengirim satu snapshot lengkap melalui satu POST SheetDB, bukan satu request per kontainer. Snapshot lama tidak dihapus sehingga jika koneksi terputus saat upload, snapshot sebelumnya tetap aman. Saat membaca data, aplikasi memilih snapshot terbaru.
+Tambahkan tiga header berikut di tab `STOWAGE_POSITIONS`:
+- `snapshot_id`
+- `record_kind`
+- `snapshot_time`
+Baris marker snapshot menggunakan `record_kind=SNAPSHOT`; baris kontainer menggunakan `record_kind=CONTAINER`. Data lama tanpa penanda snapshot tetap dibaca sebagai data legacy sampai snapshot pertama tersimpan.
+Setiap klik Sinkronkan yang mengirim perubahan = 1 request. Saat perangkat lain mengambil data = 1 GET request. Pembukaan aplikasi juga melakukan GET untuk memuat posisi awal.
+Snapshot lama akan menumpuk di sheet; bersihkan/arsipkan snapshot lama secara berkala setelah memastikan snapshot terbaru sudah benar.
+
+
+## Revisi navigasi lapangan
+- Urutan area Bay vertikal dari atas ke bawah: After Hatch, Bay 01, Bay 03, Bay 05, Bay 07, Bay 09, Bay 11, lalu Bay 13. Saat aplikasi pertama dibuka, posisi scroll otomatis berada di bagian bawah pada Bay 13.
+- Area Bay menggunakan scroll vertikal; auto-scroll saat drag juga mengikuti tepi atas/bawah.
+- Header navigasi Bay dihilangkan. Area header utama sekarang menjadi dock List Container yang sticky di atas area Bay.
+- Dock menyediakan pencarian nomor kontainer, filter Semua/20 FT/40 FT, status pemuatan database, tombol Refresh DB dan Sinkronkan, serta kartu kontainer ringkas horizontal untuk drag-and-drop.
+- Jika data CONTAINER_DATABASE gagal dimuat atau kosong, dock menampilkan keterangan dan tidak menampilkan daftar kosong tanpa penjelasan.
+- Dropdown sidebar dihapus. Sidebar hanya memuat Main Menu dan tombol hide; tombol menu pada dock membuka kembali Main Menu.
+- Tombol fullscreen dihapus.
+- Tanda X untuk cell pasangan 40 FT dinaikkan z-index di tampilan web dan cetak.
+- Aturan validasi penempatan 20/40 FT pada `stowage-rules.js` tidak diubah; seluruh pemeriksaan cell pasangan, batas Bay 13/After Hatch, dan aturan swap tetap berlaku.

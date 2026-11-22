@@ -9,7 +9,7 @@ let cloudLocalDirty = false;
 
 const CLOUD_COLUMNS = [
   'id','nomor_container','feet','bay','row','tier','cell_no',
-  'type','dir40','loading_port','destination_port','weight_ton','mov','stowage_loading_port','stowage_destination_port','ship_name','voyage','stowage_date'
+  'type','dir40','loading_port','destination_port','weight_ton','mov','stowage_loading_port','stowage_destination_port','ship_name','voyage','stowage_date','snapshot_id','record_kind','snapshot_time'
 ];
 
 function cloudStatus(message, isError = false) {
@@ -39,7 +39,10 @@ function recordToSheetRow(r) {
     stowage_destination_port: String($('stowageDestinationPort')?.value || ''),
     ship_name: String($('shipName')?.value || 'PRAKASA PACIFIC'),
     voyage: String($('voyage')?.value || ''),
-    stowage_date: String($('stowageDate')?.value || '')
+    stowage_date: String($('stowageDate')?.value || ''),
+    snapshot_id: '',
+    record_kind: 'CONTAINER',
+    snapshot_time: ''
   };
 }
 
@@ -100,8 +103,19 @@ function applyCloudStowageMeta(row) {
 
 async function loadCloudPositions() {
   const rows = await cloudFetch(STOWAGE_SHEET_URL);
-  const mapped = rows.map(sheetRowToRecord).filter(Boolean);
-  if (rows.length) applyCloudStowageMeta(rows[0]);
+  const markers = rows.filter(r => String(r.record_kind || '').toUpperCase() === 'SNAPSHOT' && r.snapshot_id);
+  let selectedRows = rows;
+  if (markers.length) {
+    const latestMarker = markers[markers.length - 1];
+    selectedRows = rows.filter(r => String(r.snapshot_id || '') === String(latestMarker.snapshot_id) &&
+      String(r.record_kind || '').toUpperCase() === 'CONTAINER');
+    applyCloudStowageMeta(latestMarker);
+  } else if (rows.length) {
+    // Kompatibilitas dengan data lama sebelum snapshot batch diperkenalkan.
+    selectedRows = rows.filter(r => !r.record_kind || String(r.record_kind).toUpperCase() === 'CONTAINER');
+    applyCloudStowageMeta(rows[0]);
+  }
+  const mapped = selectedRows.map(sheetRowToRecord).filter(Boolean);
   records = mapped;
   cloudSnapshot = mapped.map(recordToSheetRow);
   safeStorageSet('stowageRecords', JSON.stringify(records));
@@ -130,50 +144,55 @@ function setSyncButtonBusy(isBusy) {
 }
 
 async function pushLocalChanges() {
-  const current = records.map(recordToSheetRow);
-  const before = new Map(cloudSnapshot.map(r => [r.id, r]));
-  const after = new Map(current.map(r => [r.id, r]));
-
-  // Hapus record yang sudah tidak ada di aplikasi.
-  for (const [id] of before) {
-    if (!after.has(id)) {
-      const url = new URL(STOWAGE_SHEET_URL);
-      url.pathname = `${url.pathname}/id/${encodeURIComponent(id)}`;
-      await cloudFetch(url.toString(), 'DELETE');
-    }
-  }
-
-  // Tambah atau update hanya record yang berubah.
-  for (const [id, row] of after) {
-    const old = before.get(id);
-    if (!old) {
-      await cloudFetch(STOWAGE_SHEET_URL, 'POST', { data: [row] });
-    } else if (JSON.stringify(old) !== JSON.stringify(row)) {
-      const url = new URL(STOWAGE_SHEET_URL);
-      url.pathname = `${url.pathname}/id/${encodeURIComponent(id)}`;
-      await cloudFetch(url.toString(), 'PUT', { data: [row] });
-    }
-  }
-
-  cloudSnapshot = current;
+  // Satu klik sinkron = satu POST berisi seluruh posisi (bulk snapshot).
+  // Snapshot lama tidak dihapus agar sinkronisasi tidak berisiko mengosongkan sheet
+  // jika koneksi terputus di tengah proses.
+  const snapshotId = `SNAP-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const snapshotTime = new Date().toISOString();
+  const meta = {
+    id: snapshotId,
+    nomor_container: '',
+    feet: '',
+    bay: '',
+    row: '',
+    tier: '',
+    cell_no: '',
+    type: '',
+    dir40: '',
+    loading_port: '',
+    destination_port: '',
+    weight_ton: '',
+    mov: '',
+    stowage_loading_port: String($('stowageLoadingPort')?.value || ''),
+    stowage_destination_port: String($('stowageDestinationPort')?.value || ''),
+    ship_name: String($('shipName')?.value || 'PRAKASA PACIFIC'),
+    voyage: String($('voyage')?.value || ''),
+    stowage_date: String($('stowageDate')?.value || ''),
+    snapshot_id: snapshotId,
+    record_kind: 'SNAPSHOT',
+    snapshot_time: snapshotTime
+  };
+  const rows = [
+    meta,
+    ...records.map(r => ({
+      ...recordToSheetRow(r),
+      snapshot_id: snapshotId,
+      record_kind: 'CONTAINER',
+      snapshot_time: snapshotTime
+    }))
+  ];
+  await cloudFetch(STOWAGE_SHEET_URL, 'POST', { data: rows });
+  cloudSnapshot = records.map(recordToSheetRow);
   cloudLocalDirty = false;
   safeStorageSet('stowageCloudDirty', '0');
-  cloudStatus(`Berhasil dikirim ke SheetDB · ${current.length} posisi`);
+  cloudStatus(`Berhasil sinkron · ${records.length} kontainer · 1 request`);
 }
-
 async function pullLatestChanges() {
-  const rows = await cloudFetch(STOWAGE_SHEET_URL);
-  const remote = rows.map(sheetRowToRecord).filter(Boolean);
-  if (rows.length) applyCloudStowageMeta(rows[0]);
-  records = remote;
-  cloudSnapshot = remote.map(recordToSheetRow);
-  safeStorageSet('stowageRecords', JSON.stringify(records));
+  await loadCloudPositions();
   cloudLocalDirty = false;
   safeStorageSet('stowageCloudDirty', '0');
-  render(false);
-  cloudStatus(`Update dari server diterima · ${records.length} posisi`);
+  cloudStatus(`Data terbaru diterima · ${records.length} kontainer · 1 request`);
 }
-
 async function manualCloudSync() {
   if (!cloudReady || cloudBusy) return;
   cloudBusy = true;

@@ -108,7 +108,7 @@ function slotCardHTML(b, s, isDashed = false) {
         ${hasRecord
       ? `<span class="whitespace-nowrap font-mono text-sm font-black tracking-tight text-slate-900 print:break-all print:whitespace-normal print:text-[8.5px] print:leading-tight">${esc(r.number)}</span><span class="mt-0.5 rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-800 print:text-[6px]">${esc(r.type || 'DC')}</span>`
       : isBlocked
-        ? `<span class="absolute -top-12 inset-0 z-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+        ? `<span class="absolute inset-0 z-50 print:z-50 flex items-center justify-center pointer-events-none" aria-hidden="true">
                     <span class="text-black text-[7rem] md:text-[10rem] lg:text-[11rem] font-black leading-none print:text-5xl">×</span>
                   </span>
            <span class="relative z-10 rounded bg-amber-100/90 px-1.5 py-0.5 whitespace-nowrap font-mono text-xs font-black tracking-tight text-amber-950 print:break-all print:whitespace-normal print:text-[8px] print:leading-tight">${esc(blocker.number)}</span>
@@ -189,10 +189,7 @@ function renderBayCard(b) {
   const title = bayLabel(b);
 
   // Pada tablet (md: 768px-1023px), panel menyesuaikan lebar layar tablet agar nyaman dilihat tanpa terpotong
-  const panelWidthClass =
-    b === 'AH'
-      ? 'w-[540px] md:w-[680px] lg:w-[600px] shrink-0 print:w-full print:shrink'
-      : 'w-[760px] md:w-[calc(100vw-1.75rem)] md:max-w-[880px] lg:w-[860px] shrink-0 print:w-full print:shrink';
+  const panelWidthClass = 'w-full min-w-0 max-w-none shrink-0 print:w-full print:shrink';
 
   let contentHTML = '';
 
@@ -435,60 +432,49 @@ function releaseProgrammaticScrollLock() {
 
 function detectActiveBayOnScroll() {
   if (isProgrammaticScroll) return;
-
   const container = $('bays');
   if (!container) return;
 
-  const maxScroll = container.scrollWidth - container.clientWidth;
-  if (maxScroll <= 0) return;
+  const rect = container.getBoundingClientRect();
+  const focalY = rect.top + Math.min(90, rect.height * 0.22);
+  let bestBay = BAY_IDS[0];
+  let minDistance = Infinity;
 
-  let detectedBay = BAY_IDS[0];
+  BAY_IDS.slice().reverse().forEach((b) => {
+    const panel = $('panel-' + b);
+    if (!panel) return;
+    const pRect = panel.getBoundingClientRect();
+    const panelCenter = (pRect.top + pRect.bottom) / 2;
+    const dist = Math.abs(panelCenter - focalY);
+    if (dist < minDistance) {
+      minDistance = dist;
+      bestBay = b;
+    }
+  });
 
-  if (container.scrollLeft <= 6) {
-    detectedBay = BAY_IDS[0];
-  } else if (container.scrollLeft >= maxScroll - 6) {
-    detectedBay = BAY_IDS[BAY_IDS.length - 1];
-  } else {
-    const rect = container.getBoundingClientRect();
-    const focalX = rect.left + rect.width * 0.4;
-    let bestBay = activeBay;
-    let minDistance = Infinity;
-
-    BAY_IDS.forEach((b) => {
-      const panel = $('panel-' + b);
-      if (!panel) return;
-      const pRect = panel.getBoundingClientRect();
-      if (focalX >= pRect.left && focalX <= pRect.right) {
-        bestBay = b;
-        minDistance = 0;
-      } else if (minDistance > 0) {
-        const panelCenter = (pRect.left + pRect.right) / 2;
-        const dist = Math.abs(panelCenter - focalX);
-        if (dist < minDistance) {
-          minDistance = dist;
-          bestBay = b;
-        }
-      }
-    });
-
-    detectedBay = bestBay;
-  }
-
-  if (String(detectedBay) !== String(activeBay)) {
-    activeBay = detectedBay === 'AH' ? 'AH' : Number(detectedBay);
-    syncNavActiveUI(true);
+  if (String(bestBay) !== String(activeBay)) {
+    activeBay = bestBay === 'AH' ? 'AH' : Number(bestBay);
+    syncNavActiveUI(false);
   }
 }
 
 function render(preserveScroll = false) {
   const baysEl = $('bays');
-  const prevScrollLeft = preserveScroll && baysEl ? baysEl.scrollLeft : 0;
+  const prevScrollTop = preserveScroll && baysEl ? baysEl.scrollTop : 0;
 
   renderNavButtons();
-  baysEl.innerHTML = BAY_IDS.map((b) => renderBayCard(b)).join('');
+  baysEl.innerHTML = BAY_IDS.slice().reverse().map((b) => renderBayCard(b)).join('');
 
-  if (preserveScroll && baysEl) {
-    baysEl.scrollLeft = prevScrollLeft;
+  if (baysEl) {
+    if (preserveScroll) {
+      baysEl.scrollTop = prevScrollTop;
+    } else {
+      // Tampilan awal dimulai dari Bay 13 yang berada di bagian paling bawah.
+      baysEl.scrollTop = baysEl.scrollHeight;
+      requestAnimationFrame(() => {
+        baysEl.scrollTop = baysEl.scrollHeight;
+      });
+    }
   }
 
   updateSummary();
@@ -580,7 +566,7 @@ function goBay(b) {
   const el = $('panel-' + b);
   if (el) {
     setProgrammaticScrollLock();
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+    el.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
   }
 }
 

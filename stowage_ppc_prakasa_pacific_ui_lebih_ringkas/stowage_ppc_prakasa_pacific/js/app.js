@@ -5,56 +5,11 @@ $('mobileSidebarBtn').addEventListener('click', openMobileSidebar);
 $('tabletSidebarBtn')?.addEventListener('click', openMobileSidebar);
 
 // Mode fokus layar penuh untuk pekerjaan lapangan di tablet/ponsel.
-const focusBtn = $('mobileFocusBtn');
-async function toggleBayFocus() {
-    const active = document.body.classList.contains('bay-focus-mode');
-    if (active) {
-        document.body.classList.remove('bay-focus-mode');
-        if (document.fullscreenElement && document.exitFullscreen) {
-            try { await document.exitFullscreen(); } catch (_) {}
-        }
-        if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Fokus Bay';
-        return;
-    }
-    document.body.classList.add('bay-focus-mode');
-    if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Keluar Fokus';
-    const root = document.documentElement;
-    if (root.requestFullscreen) {
-        try { await root.requestFullscreen(); } catch (_) { /* CSS focus mode tetap aktif */ }
-    }
-}
-focusBtn?.addEventListener('click', toggleBayFocus);
-document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && document.body.classList.contains('bay-focus-mode')) {
-        document.body.classList.remove('bay-focus-mode');
-        if (focusBtn) focusBtn.querySelector('.focus-btn-label').textContent = 'Fokus Bay';
-    }
-});
 $('closeSidebarBtn').addEventListener('click', closeMobileSidebar);
 $('sidebarBackdrop').addEventListener('click', closeMobileSidebar);
 
-$('bayNavButtons').addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-bay]');
-    if (btn) goBay(btn.dataset.bay);
-});
-
 $('bays').addEventListener('pointerdown', releaseProgrammaticScrollLock, { passive: true });
 $('bays').addEventListener('touchstart', releaseProgrammaticScrollLock, { passive: true });
-
-$('bays').addEventListener(
-    'wheel',
-    (e) => {
-        releaseProgrammaticScrollLock();
-        const el = $('bays');
-        const canScrollX = el.scrollWidth > el.clientWidth;
-        const fitsVertically = el.scrollHeight <= el.clientHeight + 2;
-        if (canScrollX && fitsVertically && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-            e.preventDefault();
-            el.scrollLeft += e.deltaY;
-        }
-    },
-    { passive: false }
-);
 
 let scrollTicking = false;
 $('bays').addEventListener(
@@ -144,7 +99,7 @@ $('bays').addEventListener('dragover', (e) => {
     const spec = getDraggedSpec();
     if (!spec) return;
 
-    updateBayAutoScrollFromClientX(e.clientX);
+    updateBayAutoScrollFromClientX(e.clientY);
 
     const slotCard = e.target.closest('.slot-card');
     if (!slotCard) return;
@@ -370,3 +325,6 @@ $('modal').addEventListener('click', (e) => {
 });
 
 render(false);
+
+// Muat daftar kontainer langsung ke dock tetap di bagian atas.
+window.addEventListener('load', () => { ensureSidebarDatabaseLoaded(); });

@@ -142,7 +142,7 @@ function startBayAutoScrollLoop() {
         const baysEl = $('bays');
         if (baysEl) {
             releaseProgrammaticScrollLock();
-            baysEl.scrollLeft += autoScrollVelocity;
+            baysEl.scrollTop += autoScrollVelocity;
         }
         autoScrollRaf = requestAnimationFrame(step);
     };
@@ -157,7 +157,7 @@ function stopBayAutoScroll() {
     }
 }
 
-function updateBayAutoScrollFromClientX(clientX) {
+function updateBayAutoScrollFromClientX(clientY) {
     const baysEl = $('bays');
     if (!baysEl || !draggedItem) {
         stopBayAutoScroll();
@@ -165,20 +165,20 @@ function updateBayAutoScrollFromClientX(clientX) {
     }
 
     const rect = baysEl.getBoundingClientRect();
-    if (clientX < rect.left - 40 || clientX > rect.right + 40) {
+    if (clientY < rect.top - 40 || clientY > rect.bottom + 40) {
         stopBayAutoScroll();
         return;
     }
 
-    const edgeThreshold = 110;
-    const maxSpeed = 24;
+    const edgeThreshold = 90;
+    const maxSpeed = 22;
 
-    if (clientX - rect.left < edgeThreshold) {
-        const ratio = Math.min(1, Math.max(0.15, (edgeThreshold - (clientX - rect.left)) / edgeThreshold));
+    if (clientY - rect.top < edgeThreshold) {
+        const ratio = Math.min(1, Math.max(0.15, (edgeThreshold - (clientY - rect.top)) / edgeThreshold));
         autoScrollVelocity = -Math.round(maxSpeed * ratio);
         startBayAutoScrollLoop();
-    } else if (rect.right - clientX < edgeThreshold) {
-        const ratio = Math.min(1, Math.max(0.15, (edgeThreshold - (rect.right - clientX)) / edgeThreshold));
+    } else if (rect.bottom - clientY < edgeThreshold) {
+        const ratio = Math.min(1, Math.max(0.15, (edgeThreshold - (rect.bottom - clientY)) / edgeThreshold));
         autoScrollVelocity = Math.round(maxSpeed * ratio);
         startBayAutoScrollLoop();
     } else {
@@ -188,7 +188,7 @@ function updateBayAutoScrollFromClientX(clientX) {
 
 document.addEventListener('dragover', (e) => {
     if (!draggedItem) return;
-    updateBayAutoScrollFromClientX(e.clientX);
+    updateBayAutoScrollFromClientX(e.clientY);
 });
 
 document.addEventListener('dragend', () => {

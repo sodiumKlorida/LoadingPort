@@ -14,7 +14,7 @@ function setDesktopSidebarState(isHidden) {
     } else {
         sidebar.classList.remove('lg:hidden');
         if (showBtn) {
-            showBtn.classList.add('hidden');
+            if (window.innerWidth >= 1024) showBtn.classList.add('hidden');
             showBtn.classList.remove('lg:flex');
         }
     }
@@ -32,37 +32,10 @@ $('hideSidebarBtn')?.addEventListener('click', () => {
 });
 
 $('showSidebarBtn')?.addEventListener('click', () => {
-    setDesktopSidebarState(false);
+    if (window.innerWidth >= 1024) setDesktopSidebarState(false);
+    else openMobileSidebar();
 });
 
-// =========================================================================
-// SWITCH TAMPILAN SIDEBAR (DROPDOWN MAIN MENU / LIST CONTAINER)
-// =========================================================================
-function setSidebarView(mode) {
-    sidebarViewMode = mode === 'containers' ? 'containers' : 'main';
-    const select = $('sidebarViewSelect');
-    if (select && select.value !== sidebarViewMode) {
-        select.value = sidebarViewMode;
-    }
-
-    const mainView = $('sidebarMainMenu');
-    const listView = $('sidebarContainerListView');
-
-    if (sidebarViewMode === 'containers') {
-        mainView.classList.add('hidden');
-        listView.classList.remove('hidden');
-        listView.classList.add('flex');
-        ensureSidebarDatabaseLoaded();
-    } else {
-        listView.classList.add('hidden');
-        listView.classList.remove('flex');
-        mainView.classList.remove('hidden');
-    }
-}
-
-$('sidebarViewSelect')?.addEventListener('change', (e) => {
-    setSidebarView(e.target.value);
-});
 
 function printStowage() {
     window.print();

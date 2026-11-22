@@ -14,6 +14,7 @@ async function ensureSidebarDatabaseLoaded(forceRefresh = false) {
         const cached = sessionStorage.getItem(DB_CACHE_KEY);
         if (cached) {
             databaseRows = JSON.parse(cached);
+            if (statusEl) statusEl.textContent = `${databaseRows.length} data tersedia (cache sesi).`;
             renderAvailableContainerCards();
             return;
         }
@@ -25,6 +26,9 @@ async function ensureSidebarDatabaseLoaded(forceRefresh = false) {
     }
 
     await loadDatabase(forceRefresh);
+    if (statusEl && databaseRows.length === 0) {
+        statusEl.textContent = 'Data container belum dapat dimuat / database kosong. Periksa koneksi dan SheetDB.';
+    }
     renderAvailableContainerCards();
 }
 
@@ -51,7 +55,7 @@ function renderAvailableContainerCards() {
         if (sidebarSizeFilter === '40' && !is40) return false;
 
         if (!searchQuery) return true;
-        const haystack = `${r.number} ${r.loadingPort} ${r.port} ${r.feet} ${r.weight}`.toLowerCase();
+        const haystack = String(r.number || '').toLowerCase();
         return haystack.includes(searchQuery);
     });
 
@@ -65,7 +69,7 @@ function renderAvailableContainerCards() {
     if (filteredRows.length === 0) {
         cardsEl.innerHTML = `
             <div class="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-center text-xs text-slate-500">
-                ${databaseRows.length === 0 ? 'Belum ada data database kontainer.' : 'Tidak ada kontainer tersedia yang cocok.'}
+                ${databaseRows.length === 0 ? 'Data kontainer belum dapat dimuat atau database kosong. Periksa koneksi/API SheetDB.' : 'Tidak ada kontainer tersedia yang cocok.'}
             </div>
         `;
         return;
