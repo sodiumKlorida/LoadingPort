@@ -1,39 +1,7 @@
-const SIDEBAR_HIDDEN_KEY = 'stowageDesktopSidebarHidden';
-
-function setDesktopSidebarState(isHidden) {
-    const sidebar = $('appSidebar');
-    const showBtn = $('showSidebarBtn');
-    if (!sidebar) return;
-
-    if (isHidden) {
-        sidebar.classList.add('lg:hidden');
-        if (showBtn) {
-            showBtn.classList.remove('hidden');
-            showBtn.classList.add('lg:flex');
-        }
-    } else {
-        sidebar.classList.remove('lg:hidden');
-        if (showBtn) {
-            if (window.innerWidth >= 1024) showBtn.classList.add('hidden');
-            showBtn.classList.remove('lg:flex');
-        }
-    }
-    safeStorageSet(SIDEBAR_HIDDEN_KEY, isHidden ? '1' : '0');
-}
-
-setDesktopSidebarState(safeStorageGet(SIDEBAR_HIDDEN_KEY) === '1');
-
+// Sidebar desktop selalu tampil. Pada tablet/mobile, akses dan tutup sidebar
+// menggunakan kontrol sidebar yang sudah tersedia agar tidak ada tombol hamburger ganda.
 $('hideSidebarBtn')?.addEventListener('click', () => {
-    if (window.innerWidth >= 1024) {
-        setDesktopSidebarState(true);
-    } else {
-        closeMobileSidebar();
-    }
-});
-
-$('showSidebarBtn')?.addEventListener('click', () => {
-    if (window.innerWidth >= 1024) setDesktopSidebarState(false);
-    else openMobileSidebar();
+    closeMobileSidebar();
 });
 
 

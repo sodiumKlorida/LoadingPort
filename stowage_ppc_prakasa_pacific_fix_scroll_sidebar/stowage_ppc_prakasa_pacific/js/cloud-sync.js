@@ -1,6 +1,6 @@
 // Sinkronisasi posisi kontainer ke tab Google Sheets melalui SheetDB.
 // Sheet tab wajib bernama STOWAGE_POSITIONS dan memiliki header sesuai README.
-const STOWAGE_SHEET_URL = 'https://sheetdb.io/api/v1/7bh7fxoh4afcw?sheet=STOWAGE_POSITIONS';
+const STOWAGE_SHEET_URL = 'https://sheetdb.io/api/v1/uk78l777buob7?sheet=STOWAGE_POSITIONS';
 let cloudReady = false;
 let cloudBusy = false;
 let cloudDirty = false;

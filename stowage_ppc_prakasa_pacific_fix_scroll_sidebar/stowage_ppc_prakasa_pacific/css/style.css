@@ -350,14 +350,12 @@
 }
 @media print {
   #containerDock { display: none !important; }
-  .bay-scroll-area { overflow: visible !important; }
   .bay-scroll-area .slot-card .absolute.z-50,
   .print-page-grid .slot-card .absolute.z-50 { z-index: 99999 !important; }
 }
 
-.container-dock-menu:not(.hidden) { display: flex; align-items: center; justify-content: center; min-width: 30px; }
 @media (max-width: 1023px) {
-  #showSidebarBtn { display: flex !important; }
+  #showSidebarBtn { display: none !important; }
   .bay-scroll-area > .bay-panel { min-height: 390px; }
   .bay-scroll-area > .bay-panel[data-bay-panel="13"],
   .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 260px; }
@@ -460,4 +458,34 @@
   .bay-scroll-area > .bay-panel { min-height: 320px; }
   .bay-scroll-area > .bay-panel[data-bay-panel="13"],
   .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 225px; }
+}
+
+
+/* FIX TABLET/MOBILE: kunci tinggi workspace dan aktifkan scroll internal Bay. */
+@media screen {
+  html, body { height: 100%; }
+  #mainWorkspace {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #bays.bay-scroll-area {
+    display: flex !important;
+    flex: 1 1 0% !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+  }
+  #showSidebarBtn { display: none !important; }
+}
+@media screen and (max-width: 1023px) {
+  #mainWorkspace { padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+}
+@media screen and (max-width: 767px) {
+  #mainWorkspace { height: calc(100dvh - 56px) !important; }
 }
