@@ -232,7 +232,7 @@ function renderBayCard(b) {
     contentHTML = `
       <div class="flex flex-1 flex-col gap-3 md:gap-1.5 lg:gap-3 p-2.5 md:p-2 lg:p-2.5 print:space-y-1.5 print:p-2">
         <!-- ON DECK ZONE -->
-        <div class="grid flex-1 grid-cols-[minmax(0,1fr)_172px] md:grid-cols-[minmax(0,1fr)_160px] lg:grid-cols-[minmax(0,1fr)_196px] gap-2 md:gap-1.5 lg:gap-2.5 print:grid-cols-[minmax(0,1fr)_102px] print:gap-1.5">
+        <div class="grid flex-1 grid-cols-[minmax(0,1fr)_172px] md:grid-cols-[minmax(0,1fr)_196px] lg:grid-cols-[minmax(0,1fr)_196px] gap-2 md:gap-1.5 lg:gap-2.5 print:grid-cols-[minmax(0,1fr)_102px] print:gap-1.5">
           <section class="flex flex-col p-1.5 md:p-2 print:rounded-lg print:border-slate-400 print:bg-white print:p-1.5">
             <div class="grid flex-1 grid-rows-2 gap-2 print:gap-1">
               <!-- Tier 84 (2 center slots) -->
@@ -270,7 +270,7 @@ function renderBayCard(b) {
         </div>
 
         <!-- IN HOLE ZONE -->
-        <div class="grid flex-1 grid-cols-[minmax(0,1fr)_172px] md:grid-cols-[minmax(0,1fr)_160px] lg:grid-cols-[minmax(0,1fr)_196px] gap-2 md:gap-1.5 lg:gap-2.5 print:grid-cols-[minmax(0,1fr)_102px] print:gap-1.5">
+        <div class="grid flex-1 grid-cols-[minmax(0,1fr)_172px] md:grid-cols-[minmax(0,1fr)_196px] lg:grid-cols-[minmax(0,1fr)_196px] gap-2 md:gap-1.5 lg:gap-2.5 print:grid-cols-[minmax(0,1fr)_102px] print:gap-1.5">
           <section class="flex flex-col p-1.5 md:p-2 print:rounded-lg print:border-slate-400 print:bg-white print:p-1.5">
             <div class="grid flex-1 grid-rows-2 gap-2 print:gap-1">
               <!-- Tier 04 -->
