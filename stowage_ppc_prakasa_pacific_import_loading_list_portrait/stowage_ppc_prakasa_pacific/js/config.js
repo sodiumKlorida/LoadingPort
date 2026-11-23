@@ -48,11 +48,23 @@ function safeStorageSet(key, value) {
     try { window.localStorage.setItem(key, value); return true; }
     catch (err) { console.error('localStorage tidak dapat ditulis:', err); return false; }
 }
+function safeStorageRemove(key) {
+    try { window.localStorage.removeItem(key); return true; }
+    catch (err) { console.error('localStorage tidak dapat dihapus:', err); return false; }
+}
+function uniqueStowageRecords(items) {
+    const unique = new Map();
+    items.forEach((record) => {
+        const key = String(record.number || '').replace(/\s+/g, '').toUpperCase();
+        if (key) unique.set(key, record);
+    });
+    return [...unique.values()];
+}
 let storageWarningShown = false;
 let records = (() => {
     try {
         const parsed = JSON.parse(safeStorageGet('stowageRecords', '[]') || '[]');
-        return Array.isArray(parsed) ? parsed : [];
+        return Array.isArray(parsed) ? uniqueStowageRecords(parsed) : [];
     } catch (err) {
         console.error('Data stowage tersimpan tidak valid:', err);
         return [];

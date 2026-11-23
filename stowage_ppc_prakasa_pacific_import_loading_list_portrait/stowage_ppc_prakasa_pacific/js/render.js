@@ -95,7 +95,7 @@ function slotCardHTML(b, s, isDashed = false) {
 
   return `
     <div id="cell-${esc(b)}-${s}" data-bay="${esc(b)}" data-slot="${s}"
-      ${isDraggable ? `draggable="true" data-record-id="${esc(dragRecordId)}" title="Klik untuk edit, seret ke slot lain untuk pindah/tukar, atau seret ke bawah untuk membuang"` : ''}
+      ${isDraggable ? `draggable="true" data-record-id="${esc(dragRecordId)}" title="${esc(activeContainer.remarks || 'Klik untuk edit, seret ke slot lain untuk pindah/tukar, atau seret ke bawah untuk membuang')}"` : ''}
       class="slot-card group relative flex h-full min-h-[92px] md:min-h-[66px] lg:min-h-[98px] min-w-[120px] md:min-w-[100px] lg:min-w-[128px] flex-col justify-between overflow-hidden rounded-xl md:rounded-lg lg:rounded-xl border transition duration-150 print:min-h-[68px] print:min-w-0 print:rounded-md print:border-slate-800 print:shadow-none ${cursorClass} ${cardSurface} ${dimClass}">
       <!-- Top Cell & Weight Strip -->
       <div class="flex items-center justify-between gap-1.5 border-b px-2.5 py-1 text-[11px] font-bold print:border-slate-800 print:px-1 print:py-0.5 print:text-[7.5px] ${headerBg}">
@@ -106,7 +106,7 @@ function slotCardHTML(b, s, isDashed = false) {
       <!-- Center Container Number -->
       <div class="relative flex flex-1 flex-col items-center justify-center px-2 py-1.5 text-center print:px-0.5 print:py-1">
         ${hasRecord
-      ? `<span class="whitespace-nowrap font-mono text-sm font-black tracking-tight text-slate-900 print:break-all print:whitespace-normal print:text-[8.5px] print:leading-tight">${esc(r.number)}</span><span class="mt-0.5 rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-800 print:text-[6px]">${esc(r.type || 'DC')}</span>`
+      ? `<span class="whitespace-nowrap font-mono text-sm font-black tracking-tight text-slate-900 print:break-all print:whitespace-normal print:text-[8.5px] print:leading-tight">${esc(r.number)}</span><span class="mt-0.5 rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-800 print:text-[6px]">${esc(r.type || 'DC')}</span>${r.remarks ? `<span class="mt-0.5 max-w-full truncate px-1 text-[9px] font-medium text-slate-600 print:hidden" title="${esc(r.remarks)}">Remarks: ${esc(r.remarks)}</span>` : ''}`
       : isBlocked
         ? `<span class="relative z-10 rounded bg-amber-100/90 px-1.5 py-0.5 whitespace-nowrap font-mono text-xs font-black tracking-tight text-amber-950 print:break-all print:whitespace-normal print:text-[8px] print:leading-tight">${esc(blocker.number)}</span>
            `
@@ -571,10 +571,11 @@ function goBay(b) {
 }
 
 function updateSummary() {
-  const totalCount = records.length;
-  const count20 = records.filter((r) => r.size === '20 FT').length;
-  const count40 = records.filter((r) => r.size === '40 FT').length;
-  const totalMov = records.reduce((a, r) => a + Number(r.weight || 0), 0).toFixed(2);
+  const uniqueRecords = uniqueStowageRecords(records);
+  const totalCount = uniqueRecords.length;
+  const count20 = uniqueRecords.filter((r) => r.size === '20 FT').length;
+  const count40 = uniqueRecords.filter((r) => r.size === '40 FT').length;
+  const totalMov = uniqueRecords.reduce((a, r) => a + Number(r.weight || 0), 0).toFixed(2);
 
   $('mTotal').textContent = totalCount;
   $('m20').textContent = count20;

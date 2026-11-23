@@ -242,12 +242,27 @@
                     <input id="sidebarContainerSearch" aria-label="Cari nomor kontainer" placeholder="Cari nomor kontainer..."
                         class="container-dock-search">
                     <button type="button" id="clearSidebarContainerSearchBtn" title="Hapus pencarian" class="container-dock-clear hidden">×</button>
-                    <button type="button" data-size-filter="ALL" class="sidebar-size-filter is-active">SEMUA</button>
-                    <button type="button" data-size-filter="20" class="sidebar-size-filter">20 FT</button>
-                    <button type="button" data-size-filter="40" class="sidebar-size-filter">40 FT</button>
-                    <button type="button" id="refreshSidebarDbBtn" class="container-dock-action">Refresh DB</button>
-                    <button type="button" id="uploadContainerDbBtn" class="container-dock-action">Unggah DB</button>
-                    <button type="button" id="manualCloudSyncBtn" disabled class="container-dock-sync">↥ Unggah</button>
+                    <select id="sidebarSizeFilter" class="container-dock-select" aria-label="Filter ukuran kontainer">
+                        <option value="ALL">Semua</option>
+                        <option value="20">20 FT</option>
+                        <option value="40">40 FT</option>
+                    </select>
+                    <select id="tonnageSort" class="container-dock-select" aria-label="Urutkan berdasarkan tonase">
+                        <option value="none">Urut tonase</option>
+                        <option value="desc">Terberat</option>
+                        <option value="asc">Teringan</option>
+                    </select>
+                    <details id="containerActionsMenu" class="container-dock-actions">
+                        <summary class="container-dock-actions-toggle">Aksi</summary>
+                        <div class="container-dock-actions-menu">
+                            <button type="button" id="refreshSidebarDbBtn" class="container-dock-action">Refresh DB</button>
+                            <button type="button" id="uploadContainerDbBtn" class="container-dock-action">Unggah DB</button>
+                            <button type="button" id="manualCloudSyncBtn" disabled class="container-dock-sync">↥ Unggah</button>
+                            <button type="button" id="resetAllBtn"
+                                class="container-dock-action border-rose-200 text-rose-700 hover:bg-rose-50"
+                                title="Reset posisi, data impor lokal, dan informasi voyage">Reset Data</button>
+                        </div>
+                    </details>
                     <span id="cloudSyncStatus" class="container-dock-status">Menghubungkan...</span>
                 </div>
                 <div id="availableContainerCards" class="container-dock-cards">

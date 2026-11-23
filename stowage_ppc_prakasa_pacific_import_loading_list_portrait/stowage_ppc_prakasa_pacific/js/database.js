@@ -105,8 +105,7 @@ function renderAvailableContainerCards() {
                 : 'bg-sky-200 text-sky-950';
 
             return `
-            <div draggable="true" data-pool-index="${r.index}"
-                title="Seret (drag) kartu kontainer ini ke slot Bay"
+            <div draggable="true" data-pool-index="${r.index}" title="${esc(r.remarks || 'Seret kartu kontainer ini ke slot Bay')}"
                 class="pool-container-card cursor-grab active:cursor-grabbing rounded-xl border p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${cardBorder}">
                 <div class="flex items-center justify-between gap-2">
                     <span class="font-mono text-xs font-black tracking-tight text-slate-900">${esc(r.number)}</span>
@@ -116,6 +115,7 @@ function renderAvailableContainerCards() {
                     <span>${esc($('stowageLoadingPort')?.value || r.loadingPort || '—')} &rarr; ${esc($('stowageDestinationPort')?.value || r.port || '—')}</span>
                     <span class="font-extrabold text-slate-900">${esc(r.weight || '0')} TON</span>
                 </div>
+                ${r.remarks ? `<p class="mt-1 truncate text-[10px] font-medium text-slate-600" title="${esc(r.remarks)}">Remarks: ${esc(r.remarks)}</p>` : ''}
             </div>
             `;
         })
@@ -133,17 +133,9 @@ $('refreshSidebarDbBtn')?.addEventListener('click', () => {
     ensureSidebarDatabaseLoaded(true);
 });
 
-document.querySelectorAll('.sidebar-size-filter').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        sidebarSizeFilter = btn.dataset.sizeFilter || 'ALL';
-        document.querySelectorAll('.sidebar-size-filter').forEach((b) => {
-            const active = b.dataset.sizeFilter === sidebarSizeFilter;
-            b.className = active
-                ? 'sidebar-size-filter flex-1 rounded-lg bg-slate-900 px-2 py-1 text-[11px] font-bold text-white transition'
-                : 'sidebar-size-filter flex-1 rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700 transition hover:bg-slate-200';
-        });
-        renderAvailableContainerCards();
-    });
+$('sidebarSizeFilter')?.addEventListener('change', (e) => {
+    sidebarSizeFilter = e.target.value || 'ALL';
+    renderAvailableContainerCards();
 });
 
 // Drag start dari List Container di Sidebar (samakan opacity ghost drag seperti drag pada bay)
@@ -232,7 +224,7 @@ async function importLoadingList(file){
   const twenty=c.twenty>=0?r[c.twenty]:'';
   const is40=String(forty).trim()!==''&&String(forty).trim()!=='-'&&Number(forty)!==0;
   const is20=String(twenty).trim()!==''&&String(twenty).trim()!=='-'&&Number(twenty)!==0;
-  incoming.set(number,{number,weight:c.ton>=0?String(r[c.ton]??'').replace(',','.').trim():'',type:'DC',feet:is40?'40 FT':(is20?'20 FT':'20 FT'),loadingPort:normalizePort($('stowageLoadingPort')?.value||''),port:normalizePort($('stowageDestinationPort')?.value||''),description:c.desc>=0?String(r[c.desc]||''):'',seal:c.seal>=0?String(r[c.seal]||''):'',remarks:c.remarks>=0?String(r[c.remarks]||''):'',source:'IMPORT'});
+  incoming.set(number,{number,weight:c.ton>=0?String(r[c.ton]??'').replace(',','.').trim():'',type:'DC',feet:is40?'40 FT':(is20?'20 FT':'20 FT'),loadingPort:normalizePort($('stowageLoadingPort')?.value||''),port:normalizePort($('stowageDestinationPort')?.value||''),description:c.desc>=0?String(r[c.desc]||''):'',seal:c.seal>=0?String(r[c.seal]||''):'',remarks:c.remarks>=0?String(r[c.remarks]??'').trim():'',source:'IMPORT'});
  });
  const seen=new Set([...databaseRows.map(r=>normImportNo(r.number)), ...records.map(r=>normImportNo(r.number))]);
  const fresh=[...incoming.values()].filter(r=>!seen.has(normImportNo(r.number)));

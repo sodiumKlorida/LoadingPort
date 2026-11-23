@@ -52,6 +52,7 @@ Sebelum penggunaan produksi, uji tambah, edit, hapus, 40 FT, dan buka URL dari d
 - Tombol **Fokus Bay** mengaktifkan fullscreen browser (jika didukung) dan menyembunyikan sidebar agar navigasi Bay serta konten Bay menjadi fokus.
 - Main Menu kini memiliki Pelabuhan Awal dan Pelabuhan Tujuan.
 - Tambahkan kolom berikut pada tab `STOWAGE_POSITIONS` setelah kolom `mov`: `stowage_loading_port`, `stowage_destination_port`, `ship_name`, `voyage`, `stowage_date`. Informasi voyage disimpan bersama setiap posisi agar dapat dibaca perangkat lain.
+- Tambahkan kolom `remarks` setelah `stowage_date` agar catatan kontainer ikut tersimpan dan terbaca pada perangkat lain.
 - Kontainer yang sudah ditempatkan otomatis hilang dari list tersedia; saat dihapus dari Bay, akan muncul kembali. Nomor kontainer duplikat juga ditolak.
 - Print CSS diperbaiki agar panel tidak memotong bagian IN HOLE. Pilih A4 Portrait dan aktifkan Background graphics saat menyimpan PDF.
 
@@ -86,7 +87,7 @@ Snapshot lama akan menumpuk di sheet; bersihkan/arsipkan snapshot lama secara be
 - Urutan area Bay vertikal dari atas ke bawah: After Hatch, Bay 01, Bay 03, Bay 05, Bay 07, Bay 09, Bay 11, lalu Bay 13. Saat aplikasi pertama dibuka, posisi scroll otomatis berada di bagian bawah pada Bay 13.
 - Area Bay menggunakan scroll vertikal; auto-scroll saat drag juga mengikuti tepi atas/bawah.
 - Header navigasi Bay dihilangkan. Area header utama sekarang menjadi dock List Container yang sticky di atas area Bay.
-- Dock menyediakan pencarian nomor kontainer, filter Semua/20 FT/40 FT, status pemuatan database, tombol Refresh DB dan Unggah, serta kartu kontainer ringkas horizontal untuk drag-and-drop. Tombol Import Excel tersedia di Main Menu, tepat di bawah tombol cetak.
+- Dock menyediakan pencarian nomor kontainer, dropdown filter ukuran, dropdown urut tonase, menu dropdown aksi (Refresh DB, Unggah DB, Unggah, dan Reset Data), status pemuatan database, serta kartu kontainer ringkas horizontal untuk drag-and-drop. Tombol Import Excel tersedia di Main Menu, tepat di bawah tombol cetak.
 - Jika data CONTAINER_DATABASE gagal dimuat atau kosong, dock menampilkan keterangan dan tidak menampilkan daftar kosong tanpa penjelasan.
 - Dropdown sidebar dihapus. Sidebar memuat Main Menu; ikon sembunyikan/tampilkan berada di kiri judul List Container dan berganti sesuai status sidebar.
 - Tombol fullscreen dihapus.
@@ -120,3 +121,4 @@ Aplikasi juga menerima beberapa nama alias saat membaca database, tetapi susunan
 - Nomor yang muncul lebih dari sekali hanya menyimpan satu baris. Baris Excel terakhir untuk nomor yang sama menjadi data terbaru.
 - Data hasil import disimpan lokal di browser pada key `stowageImportedContainersV1`.
 - Tombol **Unggah DB** mengirim hanya data import unik ke tab `CONTAINER_DATABASE`. Tunggu pemberitahuan berhasil lalu tekan **Refresh DB** jika daftar belum diperbarui.
+- Tombol **Reset Data** menghapus posisi stowage, data import/cache lokal, dan informasi voyage pada browser. Database master Google Sheets tidak dihapus; tekan **Unggah** untuk menyimpan snapshot posisi kosong ke server.

@@ -9,7 +9,7 @@ let cloudLocalDirty = false;
 
 const CLOUD_COLUMNS = [
   'id','nomor_container','feet','bay','row','tier','cell_no',
-  'type','dir40','loading_port','destination_port','weight_ton','mov','stowage_loading_port','stowage_destination_port','ship_name','voyage','stowage_date','snapshot_id','record_kind','snapshot_time'
+  'type','dir40','loading_port','destination_port','weight_ton','mov','stowage_loading_port','stowage_destination_port','ship_name','voyage','stowage_date','remarks','snapshot_id','record_kind','snapshot_time'
 ];
 
 function cloudStatus(message, isError = false) {
@@ -40,6 +40,7 @@ function recordToSheetRow(r) {
     ship_name: String($('shipName')?.value || 'PRAKASA PACIFIC'),
     voyage: String($('voyage')?.value || ''),
     stowage_date: String($('stowageDate')?.value || ''),
+    remarks: String(r.remarks || ''),
     snapshot_id: '',
     record_kind: 'CONTAINER',
     snapshot_time: ''
@@ -68,7 +69,8 @@ function sheetRowToRecord(row) {
     loadingPort: normalizePort(row.loading_port),
     port: normalizePort(row.destination_port),
     weight: String(row.weight_ton ?? ''),
-    mov: Number(row.mov || 1)
+    mov: Number(row.mov || 1),
+    remarks: String(row.remarks || '')
   };
 }
 
@@ -116,12 +118,13 @@ async function loadCloudPositions() {
     applyCloudStowageMeta(rows[0]);
   }
   const mapped = selectedRows.map(sheetRowToRecord).filter(Boolean);
-  records = mapped;
-  cloudSnapshot = mapped.map(recordToSheetRow);
+  records = uniqueStowageRecords(mapped);
+  cloudSnapshot = records.map(recordToSheetRow);
   safeStorageSet('stowageRecords', JSON.stringify(records));
   render(false);
   cloudReady = true;
-  cloudStatus(`Data server dimuat · ${records.length} posisi. Unggah manual setelah mengubah stowage.`);
+  const duplicatesRemoved = mapped.length - records.length;
+  cloudStatus(`Data server dimuat · ${records.length} posisi${duplicatesRemoved ? ` · ${duplicatesRemoved} duplikat diabaikan` : ''}. Unggah manual setelah mengubah stowage.`);
 }
 
 // Perubahan disimpan lokal terlebih dahulu. Tidak ada request ke SheetDB
@@ -168,6 +171,7 @@ async function pushLocalChanges() {
     ship_name: String($('shipName')?.value || 'PRAKASA PACIFIC'),
     voyage: String($('voyage')?.value || ''),
     stowage_date: String($('stowageDate')?.value || ''),
+    remarks: '',
     snapshot_id: snapshotId,
     record_kind: 'SNAPSHOT',
     snapshot_time: snapshotTime

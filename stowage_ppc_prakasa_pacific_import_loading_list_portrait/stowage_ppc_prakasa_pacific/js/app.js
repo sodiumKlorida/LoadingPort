@@ -154,6 +154,7 @@ $('bays').addEventListener('drop', (e) => {
                 port: normalizePort($('stowageDestinationPort')?.value || currentDrag.container.port),
                 weight: currentDrag.container.weight,
                 type: currentDrag.container.type || 'DC',
+                remarks: currentDrag.container.remarks || '',
                 dir40: 'forward'
             }
         : null;
@@ -264,6 +265,7 @@ $('bays').addEventListener('drop', (e) => {
             loadingPort: normalizePort(c.loadingPort),
             weight: c.weight,
             type: c.type || 'DC',
+            remarks: c.remarks || '',
             mov: 1
         };
         records.push(newItem);
@@ -286,6 +288,10 @@ $('stowageDate')?.addEventListener('change', save);
 $('stowageLoadingPort')?.addEventListener('change', save);
 $('stowageDestinationPort')?.addEventListener('change', save);
 $('clearAllBtn').addEventListener('click', clearAll);
+$('resetAllBtn')?.addEventListener('click', clearAll);
+$('containerActionsMenu')?.addEventListener('click', (e) => {
+    if (e.target.closest('button')) e.currentTarget.open = false;
+});
 
 $('showDatabaseBtn').addEventListener('click', showDatabase);
 $('showManualBtn').addEventListener('click', showManual);

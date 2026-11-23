@@ -311,7 +311,7 @@ function filterDatabase() {
             ? filtered
                 .map(
                     (r) =>
-                        `<option value="${r.index}">${esc(r.number)} · ${esc(r.loadingPort)} → ${esc(r.port)} · ${esc(r.weight)} ton · ${esc(r.type || 'DC')} (${esc(r.feet)})</option>`
+                        `<option value="${r.index}" title="${esc(r.remarks || '')}">${esc(r.number)} · ${esc(r.loadingPort)} → ${esc(r.port)} · ${esc(r.weight)} ton · ${esc(r.type || 'DC')} (${esc(r.feet)})${r.remarks ? ` · ${esc(r.remarks)}` : ''}</option>`
                 )
                 .join('')
             : '<option value="">Tidak ada data yang cocok</option>';
@@ -433,6 +433,7 @@ function submitContainer(e) {
         port: normalizePort(port),
         loadingPort: normalizePort(loadingPort),
         weight,
+        remarks: selectedDatabaseRow?.remarks || old?.remarks || '',
         mov: old?.mov ?? 1
     };
 
@@ -463,10 +464,33 @@ function deleteRecord() {
 }
 
 function clearAll() {
-    if (confirm('Hapus seluruh data kontainer dari browser ini?')) {
-        records = [];
-        save();
-        handleContainerSearch(false);
+    if (!confirm('Reset posisi stowage, data import lokal, dan informasi voyage? Database master Google Sheets tidak dihapus. Tekan Unggah setelah reset untuk mengosongkan posisi di server.')) return;
+
+    records = [];
+    databaseRows = [];
+    selectedDatabaseRow = null;
+    $('shipName').value = 'PRAKASA PACIFIC';
+    $('voyage').value = '';
+    $('stowageDate').value = '';
+    $('stowageLoadingPort').value = '';
+    $('stowageDestinationPort').value = '';
+    $('search').value = '';
+    handleContainerSearch(false);
+
+    const importCacheRemoved = safeStorageRemove('stowageImportedContainersV1');
+    let databaseCacheRemoved = true;
+    try {
+        sessionStorage.removeItem(DB_CACHE_KEY);
+    } catch (err) {
+        databaseCacheRemoved = false;
+        console.error('Cache database sesi tidak dapat dihapus:', err);
+    }
+
+    save();
+    renderAvailableContainerCards();
+    if ($('availableDbStatus')) $('availableDbStatus').textContent = 'Data lokal direset. Refresh DB untuk memuat ulang database master.';
+    if (!importCacheRemoved || !databaseCacheRemoved) {
+        alert('Reset tampilan selesai, tetapi sebagian cache browser tidak dapat dihapus. Periksa izin penyimpanan browser.');
     }
 }
 
