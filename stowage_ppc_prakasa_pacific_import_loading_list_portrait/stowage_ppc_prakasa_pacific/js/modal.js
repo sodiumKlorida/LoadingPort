@@ -237,7 +237,11 @@ async function loadDatabase(forceRefresh = false) {
                 port: normalizePort(String(getField(row, ['Pelabuhan Tujuan', 'Port of Destination', 'Discharge Port'])).trim()),
                 weight: String(getField(row, ['Berat', 'Weight'])).replace(',', '.').trim(),
                 type: String(getField(row, ['Type', 'Tipe', 'Type Container', 'Jenis']) || 'DC').trim().toUpperCase(),
-                feet: String(getField(row, ['Feet', 'Ukuran', 'Size']) || '20 FT').trim().toUpperCase()
+                feet: String(getField(row, ['Feet', 'Ukuran', 'Size']) || '20 FT').trim().toUpperCase(),
+                description: String(getField(row, ['Description', 'Deskripsi'])).trim(),
+                seal: String(getField(row, ['Seal'])).trim(),
+                remarks: String(getField(row, ['Remarks', 'Remark', 'Keterangan', 'Catatan', 'Note'])).trim(),
+                source: String(getField(row, ['Source'])).trim()
             }))
             .filter((row) => row.number)
             .forEach((row) => latestDatabaseRows.set(String(row.number).replace(/\s+/g,'').toUpperCase(), row));

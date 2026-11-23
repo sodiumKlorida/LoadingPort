@@ -221,7 +221,8 @@ async function importLoadingList(file){
  const hi=rows.findIndex(r=>r.some(c=>importKey(c)==='nocontainer'));
  if(hi<0) throw new Error('Header NO CONTAINER tidak ditemukan pada sheet LL.');
  const hs=rows[hi].map(importKey), ix=(...names)=>hs.findIndex(h=>names.includes(h));
- const c={no:ix('nocontainer','nomorcontainer','nomorkontainer','containernumber'),ton:ix('tonase','weight','berat'),desc:ix('description','deskripsi'),seal:ix('seal'),twenty:ix('20','20ft','20feet'),forty:ix('40','40ft','40feet'),remarks:ix('remarks','remark','keterangan')};
+ const findRemarkIndex=()=>hs.findIndex(h=>h.includes('remark')||h.includes('keterangan')||h.includes('catatan')||h.includes('note'));
+ const c={no:ix('nocontainer','nomorcontainer','nomorkontainer','containernumber','container'),ton:ix('tonase','weight','berat'),desc:ix('description','deskripsi','keterangandescription'),seal:ix('seal'),twenty:ix('20','20ft','20feet'),forty:ix('40','40ft','40feet'),remarks:ix('remarks','remark','keterangan','catatan','note')>=0?ix('remarks','remark','keterangan','catatan','note'):findRemarkIndex()};
  const incoming=new Map();
  const dataRowCount=Math.max(0,rows.length-hi-1);
  rows.slice(hi+1).forEach(r=>{
