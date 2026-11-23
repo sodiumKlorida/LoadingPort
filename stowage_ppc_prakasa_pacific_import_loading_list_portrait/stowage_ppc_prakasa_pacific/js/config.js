@@ -1,4 +1,4 @@
-const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/7bh7fxoh4afcw?sheet=CONTAINER_DATABASE';
+const SHEETDB_API_URL = '/api/sheetdb?sheet=CONTAINER_DATABASE';
 const DB_CACHE_KEY = 'stowageSheetDbCacheV2';
 
 let databaseRows = [];

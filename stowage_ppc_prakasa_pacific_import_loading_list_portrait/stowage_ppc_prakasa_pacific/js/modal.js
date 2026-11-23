@@ -193,7 +193,7 @@ async function loadDatabase(forceRefresh = false) {
         // SheetDB mengembalikan JSON. mode:'cors' meminta browser memproses
         // header Access-Control-Allow-Origin dari server; jangan gunakan no-cors
         // karena respons opaque tidak bisa dibaca oleh JavaScript.
-        const url = new URL(SHEETDB_API_URL);
+        const url = new URL(SHEETDB_API_URL, window.location.href);
         url.searchParams.set('sheet', 'CONTAINER_DATABASE');
         if (forceRefresh) url.searchParams.set('_', String(Date.now()));
 

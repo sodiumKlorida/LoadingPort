@@ -10,18 +10,22 @@ Baris pertama (header) harus persis seperti ini:
 Satu baris = satu kontainer yang benar-benar diletakkan pada posisi kapal. Jangan isi data posisi secara manual saat aplikasi sedang dipakai, kecuali untuk migrasi awal.
 
 ## 2. Konfigurasi SheetDB
-SheetDB harus terhubung ke spreadsheet yang sama. Endpoint yang digunakan aplikasi:
-`https://sheetdb.io/api/v1/uk78l777buob7?sheet=STOWAGE_POSITIONS`
+SheetDB harus terhubung ke spreadsheet yang sama. Aplikasi mengaksesnya melalui fungsi serverless `/api/sheetdb`; URL SheetDB disimpan di environment variable server `SHEETDB_API_URL` dan tidak dikirim ke browser.
 
-Pastikan API SheetDB mengizinkan GET, POST, PUT, DELETE untuk sheet ini. Jangan membagikan endpoint write ke publik bila konfigurasi SheetDB Anda memakai API key/fitur keamanan yang belum disiapkan.
+- URL SheetDB yang digunakan saat ini disimpan di `.env` lokal tanpa parameter `?sheet=`; `.env` diabaikan Git.
+- Untuk pengembangan lokal melalui `vercel dev`, gunakan `.env.local` dengan variabel yang sama.
+- Di Vercel, tambahkan `SHEETDB_API_URL` pada **Project Settings → Environment Variables** untuk setiap environment yang digunakan.
+- Jalankan secara lokal melalui `vercel dev` agar fungsi `/api` dan environment variable tersedia.
+- Jangan commit `.env` atau `.env.local`. Endpoint yang sama tetap digunakan; memindahkannya sekarang tidak menghapus salinan yang mungkin sudah ada di riwayat Git.
 
 ## 3. Deploy ke Vercel
 Upload seluruh isi folder project dengan struktur:
 - `index.html`
 - `css/style.css`
 - `js/*.js`
+- `api/sheetdb.js`
 
-Commit/push ke GitHub lalu tunggu deployment Vercel selesai. Semua visitor harus membuka URL deployment yang sama.
+Commit/push ke GitHub, atur `SHEETDB_API_URL` di Vercel, lalu tunggu deployment selesai. Semua visitor harus membuka URL deployment yang sama.
 
 ## 4. Cara kerja
 - Saat aplikasi dibuka, posisi diambil dari tab `STOWAGE_POSITIONS`.
@@ -43,7 +47,7 @@ Print diatur A4 portrait dengan dua panel Bay tersusun atas-bawah per halaman (d
 - Matikan Header and Footer browser
 
 ## Catatan penting sebelum dipakai ramai-ramai
-Versi ini memakai SheetDB sebagai penyimpanan bersama dengan polling 7 detik. Dua orang yang mengedit posisi yang sama hampir bersamaan masih dapat menghasilkan konflik (last write wins). Untuk penggunaan operasional multi-user yang kritis, backend dengan transaksi/locking dan autentikasi (mis. Supabase/Firebase) lebih aman. SheetDB API key/endpoint write yang tertanam di frontend dapat dilihat oleh visitor; batasi akses sesuai kemampuan paket SheetDB Anda.
+Versi ini memakai SheetDB sebagai penyimpanan bersama dengan polling 7 detik. Dua orang yang mengedit posisi yang sama hampir bersamaan masih dapat menghasilkan konflik (last write wins). Untuk penggunaan operasional multi-user yang kritis, backend dengan transaksi/locking dan autentikasi (mis. Supabase/Firebase) lebih aman. Fungsi `/api/sheetdb` menyembunyikan URL SheetDB dan hanya meneruskan GET/POST untuk dua tab yang diizinkan, tetapi endpoint proxy tetap publik dan belum mengautentikasi pengguna. Tambahkan autentikasi server-side jika operasi tulis harus dibatasi untuk pengguna tertentu.
 
 Sebelum penggunaan produksi, uji tambah, edit, hapus, 40 FT, dan buka URL dari dua perangkat/browser sekaligus.
 
@@ -65,7 +69,7 @@ Preview cetak menggunakan A4 portrait dengan dua panel Bay tersusun vertikal per
 - Saat halaman dibuka, aplikasi melakukan satu kali GET untuk mengambil posisi terakhir dari tab `STOWAGE_POSITIONS`.
 - Setiap perubahan penempatan, pertukaran, edit, atau penghapusan disimpan lokal dan ditandai belum tersinkron; tidak mengirim request.
 - Tekan tombol **Unggah** pada panel List Container:
-  - Jika ada perubahan lokal, aplikasi mengirim perubahan (POST/PUT/DELETE) ke `STOWAGE_POSITIONS`.
+  - Jika ada perubahan lokal, aplikasi mengirim snapshot perubahan (POST) ke `STOWAGE_POSITIONS`.
   - Jika tidak ada perubahan lokal, aplikasi mengambil update terbaru dari server (GET).
 - Pengguna perangkat lain perlu menekan **Unggah** untuk mengambil perubahan terbaru.
 - Tab `CONTAINER_DATABASE` tetap menjadi sumber daftar kontainer. Data sumber dimuat ketika daftar dibuka dan menggunakan cache sesi browser.
