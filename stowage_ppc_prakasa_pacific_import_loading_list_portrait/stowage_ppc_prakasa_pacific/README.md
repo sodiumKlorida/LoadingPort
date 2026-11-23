@@ -92,3 +92,31 @@ Snapshot lama akan menumpuk di sheet; bersihkan/arsipkan snapshot lama secara be
 - Tombol fullscreen dihapus.
 - Tanda X untuk cell pasangan 40 FT dinaikkan z-index di tampilan web dan cetak.
 - Aturan validasi penempatan 20/40 FT pada `stowage-rules.js` tidak diubah; seluruh pemeriksaan cell pasangan, batas Bay 13/After Hatch, dan aturan swap tetap berlaku.
+
+
+## Susunan header CONTAINER_DATABASE
+
+Buat tab `CONTAINER_DATABASE` pada Google Spreadsheet yang sama dengan header berikut pada baris pertama:
+
+| Kolom | Contoh isi | Wajib |
+|---|---|---|
+| `Nomor Container` | `TGHU3364723` | Ya |
+| `Pelabuhan Awal` | `SUB` | Ya |
+| `Pelabuhan Tujuan` | `WGP` | Ya |
+| `Berat` | `26` | Ya |
+| `Type` | `DC` | Ya |
+| `Feet` | `20 FT` atau `40 FT` | Ya |
+| `Description` | Deskripsi barang | Tidak |
+| `Seal` | Nomor segel | Tidak |
+| `Remarks` | Catatan tambahan | Tidak |
+| `Source` | `IMPORT` | Tidak |
+
+Aplikasi juga menerima beberapa nama alias saat membaca database, tetapi susunan header yang disarankan adalah nama persis pada tabel di atas.
+
+## Import dan unggah Loading List
+
+- Tombol **Import Excel** membaca sheet bernama `LL`; jika tidak ada, sheet pertama dipakai.
+- Header yang dicari adalah `NO CONTAINER`, beserta `TONASE/WEIGHT/BERAT`, `40/40 FT/40 FEET`, `20/20 FT/20 FEET`, `DESCRIPTION/DESKRIPSI`, `SEAL`, dan `REMARKS/REMARK/KETERANGAN`.
+- Nomor yang muncul lebih dari sekali hanya menyimpan satu baris. Baris Excel terakhir untuk nomor yang sama menjadi data terbaru.
+- Data hasil import disimpan lokal di browser pada key `stowageImportedContainersV1`.
+- Tombol **Unggah DB** mengirim hanya data import unik ke tab `CONTAINER_DATABASE`. Tunggu pemberitahuan berhasil lalu tekan **Refresh DB** jika daftar belum diperbarui.

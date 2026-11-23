@@ -38,9 +38,15 @@ async function ensureSidebarDatabaseLoaded(forceRefresh = false) {
 function mergeImportedContainersIntoPool() {
     try {
         const imported = JSON.parse(safeStorageGet('stowageImportedContainersV1', '[]') || '[]');
-        const known = new Set(databaseRows.map(r => String(r.number || '').replace(/\s+/g,'').toUpperCase()));
+        const latestImported = dedupeImportedRows(imported);
         let next = databaseRows.reduce((m,r)=>Math.max(m,Number(r.index)||0),-1)+1;
-        imported.forEach(r => { const key=String(r.number||'').replace(/\s+/g,'').toUpperCase(); if(key && !known.has(key)){ databaseRows.push({...r,index:next++}); known.add(key); } });
+        latestImported.forEach(r => {
+            const key=String(r.number||'').replace(/\s+/g,'').toUpperCase();
+            if(!key)return;
+            const existingIndex=databaseRows.findIndex(x=>String(x.number||'').replace(/\s+/g,'').toUpperCase()==key);
+            if(existingIndex>=0) databaseRows[existingIndex]={...databaseRows[existingIndex],...r,index:databaseRows[existingIndex].index};
+            else databaseRows.push({...r,index:next++});
+        });
     } catch (e) { console.warn('Cache import tidak dapat digabung:', e); }
 }
 
@@ -199,6 +205,14 @@ $('tonnageSort')?.addEventListener('change', (e) => { sidebarTonnageSort = e.tar
 const IMPORT_CACHE_KEY='stowageImportedContainersV1';
 const normImportNo=v=>String(v??'').toUpperCase().replace(/\s+/g,'').trim();
 const importKey=v=>String(v??'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function dedupeImportedRows(rows){
+ const latest=new Map();
+ (Array.isArray(rows)?rows:[]).forEach(r=>{
+  const key=normImportNo(r?.number);
+  if(key) latest.set(key,{...r,number:key});
+ });
+ return [...latest.values()];
+}
 async function importLoadingList(file){
  if(!window.XLSX) throw new Error('Pembaca Excel belum termuat. Periksa koneksi lalu muat ulang.');
  const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
@@ -208,15 +222,75 @@ async function importLoadingList(file){
  if(hi<0) throw new Error('Header NO CONTAINER tidak ditemukan pada sheet LL.');
  const hs=rows[hi].map(importKey), ix=(...names)=>hs.findIndex(h=>names.includes(h));
  const c={no:ix('nocontainer','nomorcontainer','nomorkontainer','containernumber'),ton:ix('tonase','weight','berat'),desc:ix('description','deskripsi'),seal:ix('seal'),twenty:ix('20','20ft','20feet'),forty:ix('40','40ft','40feet'),remarks:ix('remarks','remark','keterangan')};
- const incoming=[];
- rows.slice(hi+1).forEach(r=>{const number=String(r[c.no]??'').trim();if(!number)return;const v=c.forty>=0?r[c.forty]:'';const is40=v!==''&&v!=='-'&&v!==0;incoming.push({number,weight:c.ton>=0?String(r[c.ton]??'').replace(',','.').trim():'',type:'DC',feet:is40?'40 FT':'20 FT',loadingPort:normalizePort($('stowageLoadingPort')?.value||''),port:normalizePort($('stowageDestinationPort')?.value||''),description:c.desc>=0?String(r[c.desc]||''):'',seal:c.seal>=0?String(r[c.seal]||''):'',remarks:c.remarks>=0?String(r[c.remarks]||''):'',source:'IMPORT'});});
- const seen=new Set([...databaseRows.map(r=>normImportNo(r.number)), ...records.map(r=>normImportNo(r.number))]);let skipped=0;const fresh=[];
- incoming.forEach(r=>{const k=normImportNo(r.number);if(!k||seen.has(k)){skipped++;return;}seen.add(k);fresh.push(r);});
+ const incoming=new Map();
+ const dataRowCount=Math.max(0,rows.length-hi-1);
+ rows.slice(hi+1).forEach(r=>{
+  const number=normImportNo(r[c.no]);
+  if(!number)return;
+  const forty=c.forty>=0?r[c.forty]:'';
+  const twenty=c.twenty>=0?r[c.twenty]:'';
+  const is40=String(forty).trim()!==''&&String(forty).trim()!=='-'&&Number(forty)!==0;
+  const is20=String(twenty).trim()!==''&&String(twenty).trim()!=='-'&&Number(twenty)!==0;
+  incoming.set(number,{number,weight:c.ton>=0?String(r[c.ton]??'').replace(',','.').trim():'',type:'DC',feet:is40?'40 FT':(is20?'20 FT':'20 FT'),loadingPort:normalizePort($('stowageLoadingPort')?.value||''),port:normalizePort($('stowageDestinationPort')?.value||''),description:c.desc>=0?String(r[c.desc]||''):'',seal:c.seal>=0?String(r[c.seal]||''):'',remarks:c.remarks>=0?String(r[c.remarks]||''):'',source:'IMPORT'});
+ });
+ const seen=new Set([...databaseRows.map(r=>normImportNo(r.number)), ...records.map(r=>normImportNo(r.number))]);
+ const fresh=[...incoming.values()].filter(r=>!seen.has(normImportNo(r.number)));
  let saved=[];try{saved=JSON.parse(safeStorageGet(IMPORT_CACHE_KEY,'[]')||'[]');}catch{}
- const savedKeys=new Set(saved.map(r=>normImportNo(r.number)));const added=fresh.filter(r=>!savedKeys.has(normImportNo(r.number)));skipped+=fresh.length-added.length;
- safeStorageSet(IMPORT_CACHE_KEY,JSON.stringify([...saved,...added]));let next=databaseRows.reduce((m,r)=>Math.max(m,Number(r.index)||0),-1)+1;
- added.forEach(r=>databaseRows.push({...r,index:next++}));try{sessionStorage.setItem(DB_CACHE_KEY,JSON.stringify(databaseRows));}catch{}
- renderAvailableContainerCards();if($('availableDbStatus'))$('availableDbStatus').textContent=`Import: ${added.length} baru, ${skipped} dilewati.`;return {added:added.length,skipped};
+ const savedMap=new Map(saved.map(r=>[normImportNo(r.number),r]).filter(([k])=>k));
+ incoming.forEach(r=>savedMap.set(normImportNo(r.number),r));
+ const savedLatest=dedupeImportedRows([...savedMap.values()]);
+ const existingSavedKeys=new Set(saved.map(r=>normImportNo(r.number)));
+ const added=fresh.filter(r=>!existingSavedKeys.has(normImportNo(r.number)));
+ safeStorageSet(IMPORT_CACHE_KEY,JSON.stringify(savedLatest));
+ let next=databaseRows.reduce((m,r)=>Math.max(m,Number(r.index)||0),-1)+1;
+ incoming.forEach(r=>{
+  const key=normImportNo(r.number);
+  const existingIndex=databaseRows.findIndex(x=>String(x.source||'').toUpperCase()==='IMPORT'&&normImportNo(x.number)==key);
+  if(existingIndex>=0) databaseRows[existingIndex]={...databaseRows[existingIndex],...r,index:databaseRows[existingIndex].index};
+ });
+ added.forEach(r=>databaseRows.push({...r,index:next++}));
+ try{sessionStorage.setItem(DB_CACHE_KEY,JSON.stringify(databaseRows));}catch{}
+ const skipped=dataRowCount-incoming.size;
+ renderAvailableContainerCards();
+ if($('availableDbStatus'))$('availableDbStatus').textContent=`Import: ${incoming.size} unik, ${skipped} duplikat/dilewati.`;
+ return {added:added.length,skipped,unique:incoming.size};
 }
 $('importContainerBtn')?.addEventListener('click',()=>$('importContainerFile')?.click());
-$('importContainerFile')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const r=await importLoadingList(f);alert(`Import berhasil: ${r.added} kontainer baru ditambahkan; ${r.skipped} data lama/duplikat dilewati.`);}catch(err){alert('Import gagal: '+err.message);console.error(err);}finally{e.target.value='';}});
+$('importContainerFile')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const r=await importLoadingList(f);alert(`Import berhasil: ${r.unique} kontainer unik; ${r.skipped} duplikat/dilewati. ${r.added} kontainer baru ditambahkan ke dock.`);}catch(err){alert('Import gagal: '+err.message);console.error(err);}finally{e.target.value='';}});
+
+$('uploadContainerDbBtn')?.addEventListener('click',async ()=>{
+ const statusEl=$('availableDbStatus');
+ let imported=[];
+ try{imported=dedupeImportedRows(JSON.parse(safeStorageGet(IMPORT_CACHE_KEY,'[]')||'[]'));}catch{}
+ if(!imported.length){alert('Belum ada data impor Loading List. Import Excel terlebih dahulu.');return;}
+ if(!SHEETDB_API_URL){alert('Endpoint CONTAINER_DATABASE belum dikonfigurasi.');return;}
+ if(!confirm(`Unggah ${imported.length} kontainer unik hasil import ke CONTAINER_DATABASE?`))return;
+ const button=$('uploadContainerDbBtn');
+ if(button){button.disabled=true;button.textContent='Mengunggah...';}
+ if(statusEl)statusEl.textContent=`Mengunggah ${imported.length} data database...`;
+ try{
+  const data=imported.map(r=>({
+   'Nomor Container':r.number,
+   'Pelabuhan Awal':r.loadingPort||normalizePort($('stowageLoadingPort')?.value||''),
+   'Pelabuhan Tujuan':r.port||normalizePort($('stowageDestinationPort')?.value||''),
+   'Berat':r.weight||'',
+   'Type':r.type||'DC',
+   'Feet':r.feet||'20 FT',
+   'Description':r.description||'',
+   'Seal':r.seal||'',
+   'Remarks':r.remarks||'',
+   'Source':r.source||'IMPORT'
+  }));
+  const response=await fetch(SHEETDB_API_URL,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({data})});
+  if(!response.ok){const detail=await response.text().catch(()=>'');throw new Error(`SheetDB HTTP ${response.status}${detail?': '+detail.slice(0,180):''}`);}
+  alert(`Berhasil mengunggah ${data.length} kontainer unik ke CONTAINER_DATABASE.`);
+  if(statusEl)statusEl.textContent=`${data.length} data impor siap di database`;
+  await ensureSidebarDatabaseLoaded(true);
+ }catch(err){
+  console.error('Unggah CONTAINER_DATABASE gagal:',err);
+  alert('Unggah database gagal: '+err.message);
+  if(statusEl)statusEl.textContent='Unggah database gagal';
+ }finally{
+  if(button){button.disabled=false;button.textContent='Unggah DB';}
+ }
+});

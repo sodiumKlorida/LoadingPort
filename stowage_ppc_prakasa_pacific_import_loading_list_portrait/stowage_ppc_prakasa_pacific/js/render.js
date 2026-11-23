@@ -96,7 +96,7 @@ function slotCardHTML(b, s, isDashed = false) {
   return `
     <div id="cell-${esc(b)}-${s}" data-bay="${esc(b)}" data-slot="${s}"
       ${isDraggable ? `draggable="true" data-record-id="${esc(dragRecordId)}" title="Klik untuk edit, seret ke slot lain untuk pindah/tukar, atau seret ke bawah untuk membuang"` : ''}
-      class="slot-card group flex h-full min-h-[92px] md:min-h-[66px] lg:min-h-[98px] min-w-[120px] md:min-w-[100px] lg:min-w-[128px] flex-col justify-between overflow-hidden rounded-xl md:rounded-lg lg:rounded-xl border transition duration-150 print:min-h-[68px] print:min-w-0 print:rounded-md print:border-slate-800 print:shadow-none ${cursorClass} ${cardSurface} ${dimClass}">
+      class="slot-card group relative flex h-full min-h-[92px] md:min-h-[66px] lg:min-h-[98px] min-w-[120px] md:min-w-[100px] lg:min-w-[128px] flex-col justify-between overflow-hidden rounded-xl md:rounded-lg lg:rounded-xl border transition duration-150 print:min-h-[68px] print:min-w-0 print:rounded-md print:border-slate-800 print:shadow-none ${cursorClass} ${cardSurface} ${dimClass}">
       <!-- Top Cell & Weight Strip -->
       <div class="flex items-center justify-between gap-1.5 border-b px-2.5 py-1 text-[11px] font-bold print:border-slate-800 print:px-1 print:py-0.5 print:text-[7.5px] ${headerBg}">
         <span class="shrink-0 whitespace-nowrap tracking-tight">${esc(getCellNo(b, s))}</span>
@@ -108,10 +108,7 @@ function slotCardHTML(b, s, isDashed = false) {
         ${hasRecord
       ? `<span class="whitespace-nowrap font-mono text-sm font-black tracking-tight text-slate-900 print:break-all print:whitespace-normal print:text-[8.5px] print:leading-tight">${esc(r.number)}</span><span class="mt-0.5 rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-800 print:text-[6px]">${esc(r.type || 'DC')}</span>`
       : isBlocked
-        ? `<span class="absolute inset-0 z-50 print:z-50 flex items-center justify-center pointer-events-none" aria-hidden="true">
-                    <span class="text-black text-[7rem] md:text-[10rem] lg:text-[11rem] font-black leading-none print:text-5xl">×</span>
-                  </span>
-           <span class="relative z-10 rounded bg-amber-100/90 px-1.5 py-0.5 whitespace-nowrap font-mono text-xs font-black tracking-tight text-amber-950 print:break-all print:whitespace-normal print:text-[8px] print:leading-tight">${esc(blocker.number)}</span>
+        ? `<span class="relative z-10 rounded bg-amber-100/90 px-1.5 py-0.5 whitespace-nowrap font-mono text-xs font-black tracking-tight text-amber-950 print:break-all print:whitespace-normal print:text-[8px] print:leading-tight">${esc(blocker.number)}</span>
            `
         : `<span class="whitespace-nowrap text-xs font-semibold text-slate-400 group-hover:text-sky-600 print:hidden">Nomor Container</span>`
     }
@@ -132,6 +129,9 @@ function slotCardHTML(b, s, isDashed = false) {
         : `<span class="select-none text-transparent">&nbsp;</span>`
     }
       </div>
+        ${isBlocked ? `<span class="pointer-events-none absolute inset-0 z-50 flex items-center justify-center print:z-50" aria-hidden="true">
+          <span class="text-black text-[7rem] md:text-[10rem] lg:text-[11rem] font-black leading-none print:text-5xl">×</span>
+        </span>` : ''}
     </div>
   `;
 }

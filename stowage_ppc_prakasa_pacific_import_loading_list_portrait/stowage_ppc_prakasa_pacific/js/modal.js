@@ -227,7 +227,8 @@ async function loadDatabase(forceRefresh = false) {
             return '';
         };
 
-        databaseRows = payload
+        const latestDatabaseRows = new Map();
+        payload
             .map((row, i) => ({
                 raw: row,
                 index: i,
@@ -238,14 +239,24 @@ async function loadDatabase(forceRefresh = false) {
                 type: String(getField(row, ['Type', 'Tipe', 'Type Container', 'Jenis']) || 'DC').trim().toUpperCase(),
                 feet: String(getField(row, ['Feet', 'Ukuran', 'Size']) || '20 FT').trim().toUpperCase()
             }))
-            .filter((row) => row.number);
+            .filter((row) => row.number)
+            .forEach((row) => latestDatabaseRows.set(String(row.number).replace(/\s+/g,'').toUpperCase(), row));
+        databaseRows = [...latestDatabaseRows.values()];
 
-        // Gabungkan kontainer hasil import lokal, tanpa mengganti nomor yang sudah ada di SheetDB.
+        // Gabungkan data import lokal dan utamakan baris import terbaru untuk nomor yang sama.
         try {
             const imported = JSON.parse(safeStorageGet('stowageImportedContainersV1', '[]') || '[]');
-            const known = new Set(databaseRows.map(r => String(r.number || '').replace(/\s+/g,'').toUpperCase()));
             let nextIndex = databaseRows.reduce((m,r)=>Math.max(m,Number(r.index)||0),-1)+1;
-            imported.forEach(r => { const key=String(r.number||'').replace(/\s+/g,'').toUpperCase(); if(key && !known.has(key)){ databaseRows.push({...r,index:nextIndex++}); known.add(key); } });
+            const latestImported = new Map();
+            imported.forEach(r => {
+                const key=String(r.number||'').replace(/\s+/g,'').toUpperCase();
+                if(key) latestImported.set(key,r);
+            });
+            latestImported.forEach((r,key) => {
+                const existingIndex=databaseRows.findIndex(x=>String(x.number||'').replace(/\s+/g,'').toUpperCase()==key);
+                if(existingIndex>=0) databaseRows[existingIndex]={...databaseRows[existingIndex],...r,index:databaseRows[existingIndex].index};
+                else databaseRows.push({...r,index:nextIndex++});
+            });
         } catch (mergeError) { console.warn('Import lokal tidak dapat digabung:', mergeError); }
         sessionStorage.setItem(DB_CACHE_KEY, JSON.stringify(databaseRows));
         filterDatabase();
