@@ -398,7 +398,7 @@
 .bay-scroll-area > .bay-panel[data-bay-panel="13"],
 .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 270px; }
 .bay-scroll-area .slot-card { min-width: 0 !important; touch-action: pan-y; }
-.bay-scroll-area .bay-panel .relative.z-50 { z-index: 9999 !important; }
+.bay-scroll-area .bay-panel .relative.z-50 { z-index: 30 !important; }
 @media (max-width: 767px) {
   .container-dock { padding: 5px; }
   .container-dock-toolbar { gap: 4px; flex-wrap: wrap; }
@@ -438,7 +438,7 @@
   .bay-scroll-area .bay-panel .slot-card > div:last-child { padding-left: 3px !important; padding-right: 3px !important; font-size: 7px !important; }
   .bay-scroll-area .bay-panel aside { min-width: 0 !important; }
 }
-.bay-scroll-area .slot-card .absolute.z-50 { z-index: 99999 !important; }
+.bay-scroll-area .slot-card .absolute.z-50 { z-index: 10 !important; }
 @media print {
   .print-page-grid .slot-card .absolute.z-50 { z-index: 99999 !important; }
 }
@@ -563,6 +563,17 @@
 @media screen and (max-width: 767px) {
   #mainWorkspace { height: calc(100dvh - 56px) !important; }
   #showSidebarBtn { display: none !important; }
+}
+@media screen and (max-width: 1279px) {
+  #appSidebar {
+    top: var(--drawer-top-offset, 0px) !important;
+    bottom: 0 !important;
+    z-index: 60 !important;
+  }
+  #sidebarBackdrop {
+    top: var(--drawer-top-offset, 0px) !important;
+    z-index: 55 !important;
+  }
 }
 
 /* Sidebar collapse desktop + ruang aman After Hatch. */

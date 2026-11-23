@@ -1,4 +1,37 @@
 // Event Listeners
+function updateMobileAccessLock() {
+    const shouldLock = window.matchMedia('(max-width: 767px)').matches &&
+        !$('mobileAccessPrompt').classList.contains('hidden');
+    const backgroundElements = [$('appRoot'), document.querySelector('body > header')];
+
+    backgroundElements.forEach((element) => {
+        if (!element) return;
+        if (shouldLock) element.setAttribute('inert', '');
+        else element.removeAttribute('inert');
+    });
+}
+
+updateMobileAccessLock();
+window.addEventListener('resize', updateMobileAccessLock);
+
+$('mobileAccessContinueBtn').addEventListener('click', () => {
+    $('mobileAccessPrompt').classList.add('hidden');
+    updateMobileAccessLock();
+});
+$('mobileAccessDeclineBtn').addEventListener('click', () => {
+    $('mobileAccessChoice').classList.add('hidden');
+    $('mobileAccessDeclined').classList.remove('hidden');
+    $('mobileAccessReconsiderBtn').focus({ preventScroll: true });
+});
+$('mobileAccessReconsiderBtn').addEventListener('click', () => {
+    $('mobileAccessDeclined').classList.add('hidden');
+    $('mobileAccessChoice').classList.remove('hidden');
+    $('mobileAccessContinueBtn').focus({ preventScroll: true });
+});
+if (window.matchMedia('(max-width: 767px)').matches) {
+    $('mobileAccessContinueBtn').focus({ preventScroll: true });
+}
+
 $('printPdfBtn').addEventListener('click', printStowage);
 $('mobilePrintBtn').addEventListener('click', printStowage);
 $('mobileSidebarBtn').addEventListener('click', openMobileSidebar);

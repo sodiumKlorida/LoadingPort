@@ -11,6 +11,39 @@
 
 <body
     class="min-h-dvh bg-slate-100 font-sans text-slate-900 antialiased selection:bg-sky-200 selection:text-sky-900 md:h-screen md:overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
+    <div id="mobileAccessPrompt"
+        class="fixed inset-0 z-[120] flex items-center justify-center overscroll-contain bg-slate-950/70 p-4 backdrop-blur-sm md:hidden print:hidden"
+        role="dialog" aria-modal="true" aria-labelledby="mobileAccessTitle" style="touch-action: none;">
+        <div class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <div id="mobileAccessChoice">
+                <h2 id="mobileAccessTitle" class="text-base font-extrabold text-slate-900">Tampilan mobile terbatas</h2>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                    Aplikasi ini lebih nyaman digunakan di tablet atau PC. Apakah Anda tetap ingin mengaksesnya di mobile?
+                </p>
+                <div class="mt-5 grid gap-2">
+                    <button type="button" id="mobileAccessContinueBtn"
+                        class="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-sky-700">
+                        Ya, tetap akses
+                    </button>
+                    <button type="button" id="mobileAccessDeclineBtn"
+                        class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100">
+                        Tidak, gunakan tablet/PC
+                    </button>
+                </div>
+            </div>
+            <div id="mobileAccessDeclined" class="hidden" aria-live="polite">
+                <h2 class="text-base font-extrabold text-slate-900">Aplikasi belum dibuka</h2>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                    Silakan buka halaman ini di tablet atau PC. Aplikasi tetap terkunci pada tampilan mobile.
+                </p>
+                <button type="button" id="mobileAccessReconsiderBtn"
+                    class="mt-5 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100">
+                    Ubah pilihan
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Top Header (hanya < 768px) -->
     <header
         class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-slate-900 px-4 py-3 text-white shadow-md md:hidden print:hidden">

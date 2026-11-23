@@ -494,7 +494,15 @@ function clearAll() {
     }
 }
 
+function updateMobileSidebarOffset() {
+    const dock = $('containerDock');
+    const dockBottom = dock?.getBoundingClientRect().bottom || 0;
+    const offset = Math.max(0, Math.min(dockBottom, window.innerHeight));
+    document.documentElement.style.setProperty('--drawer-top-offset', `${offset}px`);
+}
+
 function openMobileSidebar() {
+    updateMobileSidebarOffset();
     $('appSidebar').classList.remove('-translate-x-full');
     $('sidebarBackdrop').classList.remove('hidden');
 }
@@ -503,4 +511,10 @@ function closeMobileSidebar() {
     $('appSidebar').classList.add('-translate-x-full');
     $('sidebarBackdrop').classList.add('hidden');
 }
+
+window.addEventListener('resize', () => {
+    if (!$('appSidebar').classList.contains('-translate-x-full')) {
+        updateMobileSidebarOffset();
+    }
+});
 
