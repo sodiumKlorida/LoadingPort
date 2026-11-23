@@ -1,7 +1,7 @@
 // Sidebar desktop dapat disembunyikan; pada layar kecil berfungsi sebagai drawer.
 function setSidebarCollapsed(collapsed) {
  const app=$('appRoot'); if(!app) return;
- if(window.innerWidth>=1024){
+ if(window.innerWidth>=1280){
   app.classList.toggle('sidebar-collapsed',collapsed);
   $('showSidebarBtn')?.classList.toggle('hidden',!collapsed);
   $('hideSidebarBtn')?.classList.toggle('hidden',collapsed);
@@ -12,7 +12,7 @@ $('hideSidebarBtn')?.addEventListener('click',()=>setSidebarCollapsed(true));
 $('showSidebarBtn')?.addEventListener('click',()=>setSidebarCollapsed(false));
 window.addEventListener('resize',()=>{
  const app=$('appRoot');
- if(window.innerWidth<1024){
+ if(window.innerWidth<1280){
   app?.classList.remove('sidebar-collapsed');
   $('showSidebarBtn')?.classList.add('hidden');
   $('hideSidebarBtn')?.classList.add('hidden');

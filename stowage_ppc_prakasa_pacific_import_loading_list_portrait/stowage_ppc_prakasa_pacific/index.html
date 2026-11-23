@@ -50,12 +50,12 @@
         class="mx-auto flex min-h-dvh w-full max-w-[1920px] flex-col md:h-screen md:min-h-0 md:flex-row md:overflow-hidden print:block print:h-auto print:min-h-0 print:overflow-visible">
         <!-- Backdrop for Mobile/Tablet Drawer Sidebar -->
         <div id="sidebarBackdrop"
-            class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm lg:hidden print:hidden">
+            class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm xl:hidden print:hidden">
         </div>
 
-        <!-- Left Control Sidebar (Tablet md: drawer overlay agar Bay full width; Desktop lg: static sidebar) -->
+        <!-- Left Control Sidebar (Tablet drawer overlay agar Bay full width; Desktop xl: static sidebar) -->
         <aside id="appSidebar"
-            class="fixed inset-y-0 left-0 z-40 flex w-72 sm:w-80 shrink-0 -translate-x-full flex-col gap-3.5 overflow-y-auto border-r border-slate-200 bg-slate-100 p-3.5 lg:p-4 transition-transform duration-200 lg:static lg:h-screen lg:translate-x-0 print:hidden">
+            class="fixed inset-y-0 left-0 z-40 flex w-72 sm:w-80 shrink-0 -translate-x-full flex-col gap-3.5 overflow-y-auto border-r border-slate-200 bg-slate-100 p-3.5 lg:p-4 transition-transform duration-200 xl:static xl:h-screen xl:translate-x-0 print:hidden">
 
             <!-- VIEW 1: MAIN MENU -->
             <div id="sidebarMainMenu" class="flex flex-1 flex-col gap-3.5">
@@ -64,7 +64,7 @@
                     <div class="flex items-center justify-between">
                         <h1 class="text-lg font-extrabold tracking-tight text-white">STOWAGE PLAN PPC</h1>
                         <button type="button" id="closeSidebarBtn"
-                            class="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden">
+                            class="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white xl:hidden">
                             &#x2715;
                         </button>
                     </div>
@@ -145,7 +145,7 @@
                             <label for="search" class="mb-1 block text-xs font-semibold text-slate-700">Cari Nomor
                                 Kontainer</label>
                             <div class="relative">
-                                <input id="search" placeholder="Ketik nomor kontainer..."
+                                <input id="search" inputmode="numeric" enterkeyhint="search" placeholder="Ketik nomor kontainer..."
                                     class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 pr-8 pl-3 font-mono text-xs font-semibold text-slate-900 uppercase transition placeholder:font-sans placeholder:font-normal placeholder:normal-case focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                                 <button type="button" id="clearSearchBtn" title="Hapus pencarian"
                                     class="hidden absolute top-1/2 right-2 -translate-y-1/2 rounded-md px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-slate-200 hover:text-slate-700">
@@ -220,7 +220,7 @@
 
         <!-- Right Workspace Content (Prioritaskan area Bay pada Tablet & Desktop) -->
         <main id="mainWorkspace"
-            class="relative flex min-w-0 flex-1 flex-col gap-2.5 p-2.5 sm:p-3 lg:h-screen lg:overflow-hidden lg:p-4 print:block print:h-auto print:overflow-visible print:p-0">
+            class="relative flex min-w-0 flex-1 flex-col gap-2.5 p-2.5 sm:p-3 lg:p-4 xl:h-screen xl:overflow-hidden print:block print:h-auto print:overflow-visible print:p-0">
             <nav id="bayNavButtons" class="hidden" aria-hidden="true"></nav>
 
             <!-- Fixed container dock: search, filter, status and drag list -->
@@ -239,7 +239,7 @@
                         <strong>LIST CONTAINER</strong>
                         <span id="availableDbStatus">Menunggu database...</span>
                     </div>
-                    <input id="sidebarContainerSearch" aria-label="Cari nomor kontainer" placeholder="Cari nomor kontainer..."
+                    <input id="sidebarContainerSearch" inputmode="numeric" enterkeyhint="search" aria-label="Cari nomor kontainer" placeholder="Cari nomor kontainer..."
                         class="container-dock-search">
                     <button type="button" id="clearSidebarContainerSearchBtn" title="Hapus pencarian" class="container-dock-clear hidden">×</button>
                     <select id="sidebarSizeFilter" class="container-dock-select" aria-label="Filter ukuran kontainer">
@@ -343,7 +343,7 @@
                 <div id="databasePanel" class="hidden space-y-3">
                     <div class="flex flex-col gap-1">
                         <label for="dbSearch" class="text-xs font-bold text-slate-700">Cari Nomor Kontainer</label>
-                        <input id="dbSearch" placeholder="Ketik nomor kontainer..."
+                        <input id="dbSearch" inputmode="numeric" enterkeyhint="search" placeholder="Ketik nomor kontainer..."
                             class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                     </div>
                     <div class="flex flex-col gap-1">

@@ -397,7 +397,7 @@
 }
 .bay-scroll-area > .bay-panel[data-bay-panel="13"],
 .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 270px; }
-.bay-scroll-area .slot-card { min-width: 0 !important; }
+.bay-scroll-area .slot-card { min-width: 0 !important; touch-action: pan-y; }
 .bay-scroll-area .bay-panel .relative.z-50 { z-index: 9999 !important; }
 @media (max-width: 767px) {
   .container-dock { padding: 5px; }
@@ -418,7 +418,6 @@
 }
 
 @media (max-width: 1023px) {
-  #showSidebarBtn { display: none !important; }
   .bay-scroll-area > .bay-panel { min-height: 390px; }
   .bay-scroll-area > .bay-panel[data-bay-panel="13"],
   .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 260px; }
@@ -504,7 +503,16 @@
   .bay-scroll-area > .bay-panel[data-bay-panel="13"],
   .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 225px; }
 }
-@media (max-width: 1023px) and (min-width: 768px) {
+@media screen and (max-width: 1439px) {
+  .container-dock-toolbar { flex-wrap: wrap; }
+  .container-dock-title { min-width: 100px; }
+  .container-dock-search { flex: 1 1 180px; max-width: none; }
+  .container-dock-status { flex: 1 1 100%; max-width: none; order: 10; }
+}
+@media screen and (min-width: 768px) and (max-width: 1279px) {
+  #showSidebarBtn { display: inline-flex !important; }
+}
+@media screen and (max-width: 1279px) and (min-width: 768px) {
   .bay-scroll-area > .bay-panel { min-height: 310px; }
   .bay-scroll-area > .bay-panel[data-bay-panel="13"],
   .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 235px; }
@@ -548,17 +556,17 @@
     touch-action: pan-y;
     overscroll-behavior-y: contain;
   }
-  #showSidebarBtn { display: none !important; }
 }
-@media screen and (max-width: 1023px) {
+@media screen and (max-width: 1279px) {
   #mainWorkspace { padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
 }
 @media screen and (max-width: 767px) {
   #mainWorkspace { height: calc(100dvh - 56px) !important; }
+  #showSidebarBtn { display: none !important; }
 }
 
 /* Sidebar collapse desktop + ruang aman After Hatch. */
-@media screen and (min-width: 1024px) {
+@media screen and (min-width: 1280px) {
   #appRoot.sidebar-collapsed #appSidebar { display: none !important; }
   #appRoot.sidebar-collapsed #mainWorkspace { width: 100% !important; }
   #appRoot.sidebar-collapsed #showSidebarBtn { display: inline-flex !important; }

@@ -85,7 +85,7 @@ Snapshot lama akan menumpuk di sheet; bersihkan/arsipkan snapshot lama secara be
 
 ## Revisi navigasi lapangan
 - Urutan area Bay vertikal dari atas ke bawah: After Hatch, Bay 01, Bay 03, Bay 05, Bay 07, Bay 09, Bay 11, lalu Bay 13. Saat aplikasi pertama dibuka, posisi scroll otomatis berada di bagian bawah pada Bay 13.
-- Area Bay menggunakan scroll vertikal; auto-scroll saat drag juga mengikuti tepi atas/bawah.
+- Area Bay menggunakan scroll vertikal, termasuk pada tablet 10 inci; auto-scroll saat drag juga mengikuti tepi atas/bawah. Pada perangkat sentuh, sidebar menjadi drawer agar area Bay tetap lebar.
 - Header navigasi Bay dihilangkan. Area header utama sekarang menjadi dock List Container yang sticky di atas area Bay.
 - Dock menyediakan pencarian nomor kontainer, dropdown filter ukuran, dropdown urut tonase, menu dropdown aksi (Refresh DB, Unggah DB, Unggah, dan Reset Data), status pemuatan database, serta kartu kontainer ringkas horizontal untuk drag-and-drop. Tombol Import Excel tersedia di Main Menu, tepat di bawah tombol cetak.
 - Jika data CONTAINER_DATABASE gagal dimuat atau kosong, dock menampilkan keterangan dan tidak menampilkan daftar kosong tanpa penjelasan.
