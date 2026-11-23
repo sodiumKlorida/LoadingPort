@@ -106,7 +106,7 @@ function slotCardHTML(b, s, isDashed = false) {
       <!-- Center Container Number -->
       <div class="relative flex flex-1 flex-col items-center justify-center px-2 py-1.5 text-center print:px-0.5 print:py-1">
         ${hasRecord
-      ? `<span class="whitespace-nowrap font-mono text-sm font-black tracking-tight text-slate-900 print:break-all print:whitespace-normal print:text-[8.5px] print:leading-tight">${esc(r.number)}</span><span class="mt-0.5 rounded bg-slate-200 px-1.5 py-0.5 text-[9px] font-extrabold text-slate-800 print:text-[6px]">${esc(r.type || 'DC')}</span>`
+      ? `<span class="whitespace-nowrap font-mono text-sm font-black tracking-tight text-slate-900 print:break-all print:whitespace-normal print:text-[8.5px] print:leading-tight">${esc(r.number)}</span>`
       : isBlocked
         ? `<span class="absolute inset-0 z-50 print:z-50 flex items-center justify-center pointer-events-none" aria-hidden="true">
                     <span class="text-black text-[7rem] md:text-[10rem] lg:text-[11rem] font-black leading-none print:text-5xl">×</span>

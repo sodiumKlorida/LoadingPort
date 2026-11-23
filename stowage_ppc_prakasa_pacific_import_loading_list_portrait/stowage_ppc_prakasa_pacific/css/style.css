@@ -1,0 +1,538 @@
+@keyframes swapGlideToTarget {
+    0% { transform: translate3d(var(--swap-dx, 0px), var(--swap-dy, 0px), 0) scale(1.04); z-index: 35; box-shadow: 0 18px 30px -8px rgba(15, 23, 42, 0.28); }
+    100% { transform: translate3d(0, 0, 0) scale(1); z-index: 10; box-shadow: none; }
+}
+.swap-glide-anim { animation: swapGlideToTarget 1000ms cubic-bezier(0.22, 1, 0.36, 1) both; will-change: transform; }
+
+/* PRINT: A4 landscape, 4 panel per halaman, tanpa elemen panel saling menimpa. */
+@page { size: A4 landscape; margin: 5mm; }
+@media print {
+    *, *::before, *::after { box-sizing: border-box !important; }
+    html, body {
+        width: 100% !important; height: auto !important; min-height: 0 !important;
+        margin: 0 !important; padding: 0 !important; overflow: visible !important;
+        background: #fff !important;
+        -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    body { display: block !important; }
+    #printHeader { display: flex !important; margin: 0 0 2mm !important; padding: 1mm 2mm 2mm !important; }
+    #appRoot, #mainWorkspace, main, section { overflow: visible !important; }
+    #mainWorkspace { display: block !important; width: 100% !important; height: auto !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; }
+    #bays {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-auto-rows: 91mm !important;
+        align-content: start !important;
+        align-items: stretch !important;
+        column-gap: 3mm !important; row-gap: 3mm !important;
+        width: 100% !important; height: auto !important; min-height: 0 !important;
+        margin: 0 !important; padding: 0 !important;
+        overflow: visible !important;
+    }
+    .bay-panel {
+        display: flex !important; flex-direction: column !important;
+        width: 100% !important; min-width: 0 !important;
+        height: 91mm !important; min-height: 91mm !important; max-height: 91mm !important;
+        margin: 0 !important; padding: 0 !important;
+        overflow: hidden !important;
+        break-inside: avoid !important; page-break-inside: avoid !important;
+        border: 0.25mm solid #334155 !important; border-radius: 2mm !important;
+        box-shadow: none !important;
+    }
+    .bay-panel:nth-child(4n + 1):not(:first-child) {
+        break-before: page !important; page-break-before: always !important;
+    }
+    .bay-panel > div:first-child {
+        flex: 0 0 9mm !important; min-height: 9mm !important;
+        padding: 1mm 2mm !important;
+    }
+    .bay-panel > div:nth-child(2) {
+        flex: 1 1 auto !important; min-height: 0 !important;
+        max-height: none !important; overflow: hidden !important;
+    }
+    /* Bay reguler memiliki area On Deck, Cover, dan In Hole; bagi ruangnya secara eksplisit. */
+    .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) {
+        display: flex !important; flex-direction: column !important;
+    }
+    .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:first-child,
+    .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:last-child {
+        flex: 1 1 0 !important; min-height: 0 !important;
+    }
+    .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:nth-child(2) {
+        flex: 0 0 3mm !important; min-height: 3mm !important;
+    }
+    .bay-panel .slot-card {
+        min-width: 0 !important; min-height: 0 !important;
+        height: 14mm !important; max-height: 14mm !important;
+        overflow: hidden !important; border-radius: 1mm !important;
+    }
+    .bay-panel .slot-card > div:nth-child(2) { min-height: 0 !important; overflow: hidden !important; }
+    .bay-panel .slot-card > div:first-child { padding: 0.5mm 1mm !important; }
+    .bay-panel .slot-card > div:last-child { min-height: 4mm !important; padding: 0.5mm 1mm !important; }
+    .bay-panel aside { min-height: 0 !important; height: auto !important; max-height: 100% !important; }
+    .bay-panel aside > div { min-height: 0 !important; height: auto !important; padding: 1.5mm !important; }
+    .bay-panel section { min-height: 0 !important; overflow: hidden !important; }
+    .bay-panel section > div { min-height: 0 !important; }
+    .bay-panel .grid.grid-rows-2 { min-height: 0 !important; }
+    .bay-panel .bay-panel-content { min-height: 0 !important; }
+    #bayNavButtons, #stowageContextBar, #trashDropZone, #appSidebar,
+    #mobileTopBar, #mobilePrintBtn, #printPdfBtn, .print\\:hidden { display: none !important; }
+    .bay-panel h2 { font-size: 8pt !important; line-height: 1 !important; }
+    .bay-panel .text-xs { line-height: 1.1 !important; }
+}
+
+/* PRINT LAYOUT V2: page grouping eksplisit, 4 Bay per halaman. */
+#printPages { display: none; }
+@page { size: A4 landscape; margin: 5mm; }
+#modal { z-index: 100 !important; }
+@media print {
+  #printHeader { display: none !important; }
+  #bays { display: none !important; }
+  #printPages {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .print-page {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: 190mm !important;
+    max-height: 190mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+  .print-page:last-child {
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+  .print-page-header {
+    display: flex !important;
+    flex: 0 0 10mm !important;
+    height: 10mm !important;
+    min-height: 10mm !important;
+    margin: 0 0 2mm !important;
+    padding: 0 2mm 1mm !important;
+    border-bottom: 0.5mm solid #0f172a !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  .print-page-header h1 { font-size: 11pt !important; line-height: 1.1 !important; }
+  .print-page-header p, .print-page-header #printSummaryLine { font-size: 7pt !important; line-height: 1.1 !important; }
+  .print-page-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 87.5mm) !important;
+    grid-auto-rows: 87.5mm !important;
+    gap: 3mm !important;
+    width: 100% !important;
+    height: 178mm !important;
+    min-height: 178mm !important;
+    max-height: 178mm !important;
+    align-content: start !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 87.5mm !important;
+    min-height: 87.5mm !important;
+    max-height: 87.5mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    border: 0.25mm solid #334155 !important;
+    border-radius: 2mm !important;
+    box-shadow: none !important;
+  }
+  .print-page-grid .bay-panel > div:first-child {
+    flex: 0 0 8mm !important;
+    min-height: 8mm !important;
+    padding: 1mm 2mm !important;
+  }
+  .print-page-grid .bay-panel > div:nth-child(2) {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 79mm !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:first-child,
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:last-child {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel:not([data-bay-panel="13"]):not([data-bay-panel="AH"]) > div:nth-child(2) > div:nth-child(2) {
+    flex: 0 0 3mm !important;
+    min-height: 3mm !important;
+  }
+  .print-page-grid .bay-panel .slot-card {
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: 13mm !important;
+    max-height: 13mm !important;
+    overflow: hidden !important;
+    border-radius: 1mm !important;
+  }
+  .print-page-grid .bay-panel .slot-card > div:nth-child(2) {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 0.5mm !important;
+  }
+  .print-page-grid .bay-panel .slot-card > div:first-child,
+  .print-page-grid .bay-panel .slot-card > div:last-child {
+    padding: 0.5mm 1mm !important;
+  }
+  .print-page-grid .bay-panel aside {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 100% !important;
+  }
+  .print-page-grid .bay-panel aside > div {
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 1.2mm !important;
+  }
+  .print-page-grid .bay-panel section,
+  .print-page-grid .bay-panel section > div {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .print-page-grid .bay-panel h2 { font-size: 8pt !important; line-height: 1 !important; }
+  .print-page-grid .bay-panel .text-xs { line-height: 1.05 !important; }
+  .print-page-grid .bay-panel .text-sm { font-size: 7pt !important; line-height: 1.05 !important; }
+}
+
+
+/* Header container dock: fixed/sticky, compact, drag-list horizontal */
+.container-dock {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 80 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 6px 8px;
+}
+.container-dock-toolbar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 6px;
+  min-height: 32px;
+  flex-wrap: nowrap;
+}
+.container-dock-title {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 108px;
+  line-height: 1.1;
+}
+.container-dock-title strong { font-size: 10px; letter-spacing: .04em; color: #0f172a; }
+.container-dock-title span { font-size: 9px; color: #64748b; white-space: nowrap; }
+.container-dock-search {
+  flex: 1 1 180px;
+  min-width: 90px;
+  max-width: 260px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f8fafc;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+}
+.container-dock-search:focus { border-color: #0284c7; background: white; box-shadow: 0 0 0 2px #0ea5e922; }
+.sidebar-size-filter, .container-dock-action, .container-dock-sync, .container-dock-menu, .container-dock-clear {
+  flex: 0 0 auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.sidebar-size-filter.is-active, .sidebar-size-filter[data-size-filter="ALL"] { background: #0f172a; color: white; border-color: #0f172a; }
+.container-dock-sync { background: #e0f2fe; border-color: #7dd3fc; color: #075985; }
+.container-dock-sync:disabled { opacity: .5; cursor: not-allowed; }
+.container-dock-status {
+  min-width: 0;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #64748b;
+  font-size: 9px;
+}
+.container-dock-menu { display: none; }
+.container-dock-cards {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 38px;
+  max-height: 44px;
+  margin-top: 5px;
+  padding: 1px 1px 3px;
+  scrollbar-width: thin;
+}
+.container-dock-cards .pool-container-card {
+  display: flex;
+  flex: 0 0 190px;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 160px;
+  max-width: 220px;
+  min-height: 34px;
+  padding: 4px 7px !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+.container-dock-cards .pool-container-card > div:first-child { gap: 4px; }
+.container-dock-cards .pool-container-card > div:first-child span:first-child { font-size: 10px !important; }
+.container-dock-cards .pool-container-card > div:first-child span:last-child { font-size: 8px !important; }
+.container-dock-cards .pool-container-card > div:last-child {
+  margin-top: 2px !important;
+  font-size: 8px !important;
+  line-height: 1.1 !important;
+}
+.container-dock-empty {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  color: #64748b;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.bay-scroll-area {
+  flex-direction: column !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.bay-scroll-area > .bay-panel {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
+  min-height: 350px;
+}
+.bay-scroll-area > .bay-panel[data-bay-panel="13"],
+.bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 270px; }
+.bay-scroll-area .slot-card { min-width: 0 !important; }
+.bay-scroll-area .bay-panel .relative.z-50 { z-index: 9999 !important; }
+@media (max-width: 767px) {
+  .container-dock { padding: 5px; }
+  .container-dock-toolbar { gap: 4px; flex-wrap: wrap; }
+  .container-dock-title { min-width: 90px; }
+  .container-dock-search { flex: 1 1 120px; max-width: none; }
+  .container-dock-status { flex: 1 1 100%; max-width: none; order: 10; }
+  .container-dock-cards { max-height: 42px; }
+  .container-dock-cards .pool-container-card { flex-basis: 165px; min-width: 150px; }
+  .bay-scroll-area > .bay-panel { min-height: 380px; }
+  .bay-scroll-area > .bay-panel[data-bay-panel="13"],
+  .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 250px; }
+}
+@media print {
+  #containerDock { display: none !important; }
+  .bay-scroll-area .slot-card .absolute.z-50,
+  .print-page-grid .slot-card .absolute.z-50 { z-index: 99999 !important; }
+}
+
+@media (max-width: 1023px) {
+  #showSidebarBtn { display: none !important; }
+  .bay-scroll-area > .bay-panel { min-height: 390px; }
+  .bay-scroll-area > .bay-panel[data-bay-panel="13"],
+  .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 260px; }
+}
+@media (max-width: 767px) {
+  .bay-scroll-area .bay-panel > div:nth-child(2) > div[class*="grid-cols"] {
+    grid-template-columns: minmax(0, 1fr) 108px !important;
+  }
+  .bay-scroll-area .bay-panel > div:nth-child(2) > div > section .grid.grid-rows-2 {
+    gap: 5px !important;
+  }
+  .bay-scroll-area .bay-panel .slot-card {
+    min-width: 0 !important;
+    border-radius: 6px !important;
+  }
+  .bay-scroll-area .bay-panel .slot-card > div:first-child { padding-left: 3px !important; padding-right: 3px !important; font-size: 8px !important; }
+  .bay-scroll-area .bay-panel .slot-card > div:nth-child(2) { padding: 2px !important; }
+  .bay-scroll-area .bay-panel .slot-card > div:last-child { padding-left: 3px !important; padding-right: 3px !important; font-size: 7px !important; }
+  .bay-scroll-area .bay-panel aside { min-width: 0 !important; }
+}
+.bay-scroll-area .slot-card .absolute.z-50 { z-index: 99999 !important; }
+@media print {
+  .print-page-grid .slot-card .absolute.z-50 { z-index: 99999 !important; }
+}
+
+/* UI refinement: compact Bay panels and roomier container dock */
+@media screen {
+  .container-dock {
+    padding: 9px 14px 11px !important;
+    margin-right: 0 !important;
+  }
+  .container-dock-toolbar {
+    gap: 8px;
+    min-height: 38px;
+    padding-right: 6px;
+  }
+  .container-dock-title { min-width: 124px; }
+  .container-dock-title strong { font-size: 11px; }
+  .container-dock-title span { font-size: 10px; }
+  .container-dock-search {
+    min-height: 36px;
+    padding: 8px 11px;
+    font-size: 12px;
+    max-width: 300px;
+  }
+  .sidebar-size-filter,
+  .container-dock-action,
+  .container-dock-sync,
+  .container-dock-menu,
+  .container-dock-clear {
+    min-height: 34px;
+    padding: 7px 12px;
+    font-size: 11px;
+    border-radius: 8px;
+  }
+  .container-dock-status { font-size: 10px; max-width: 220px; }
+  .container-dock-cards {
+    min-height: 54px;
+    max-height: 60px;
+    gap: 8px;
+    margin-top: 7px;
+    padding: 2px 10px 9px 2px;
+  }
+  .container-dock-cards .pool-container-card {
+    flex-basis: 220px;
+    min-width: 205px;
+    max-width: 240px;
+    min-height: 45px;
+    padding: 6px 9px !important;
+    border-radius: 8px !important;
+  }
+  .container-dock-cards .pool-container-card > div:first-child span:first-child { font-size: 11px !important; }
+  .container-dock-cards .pool-container-card > div:first-child span:last-child { font-size: 9px !important; }
+  .container-dock-cards .pool-container-card > div:last-child {
+    margin-top: 3px !important;
+    font-size: 9px !important;
+  }
+
+  /* Reduce the vertical footprint of each Bay while keeping slot layout intact. */
+  .bay-scroll-area > .bay-panel { min-height: 300px; }
+  .bay-scroll-area > .bay-panel[data-bay-panel="13"],
+  .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 225px; }
+}
+@media (max-width: 1023px) and (min-width: 768px) {
+  .bay-scroll-area > .bay-panel { min-height: 310px; }
+  .bay-scroll-area > .bay-panel[data-bay-panel="13"],
+  .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 235px; }
+}
+@media (max-width: 767px) {
+  .container-dock { padding: 7px 9px 9px !important; }
+  .container-dock-toolbar { gap: 6px; }
+  .container-dock-title { min-width: 100px; }
+  .container-dock-search { min-height: 36px; }
+  .sidebar-size-filter,
+  .container-dock-action,
+  .container-dock-sync,
+  .container-dock-clear { min-height: 36px; padding: 8px 11px; font-size: 11px; }
+  .container-dock-cards { min-height: 54px; max-height: 58px; padding: 2px 8px 8px 2px; }
+  .container-dock-cards .pool-container-card { flex-basis: 190px; min-width: 180px; min-height: 44px; }
+  .bay-scroll-area > .bay-panel { min-height: 320px; }
+  .bay-scroll-area > .bay-panel[data-bay-panel="13"],
+  .bay-scroll-area > .bay-panel[data-bay-panel="AH"] { min-height: 225px; }
+}
+
+
+/* FIX TABLET/MOBILE: kunci tinggi workspace dan aktifkan scroll internal Bay. */
+@media screen {
+  html, body { height: 100%; }
+  #mainWorkspace {
+    height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  #bays.bay-scroll-area {
+    display: flex !important;
+    flex: 1 1 0% !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+  }
+  #showSidebarBtn { display: none !important; }
+}
+@media screen and (max-width: 1023px) {
+  #mainWorkspace { padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+}
+@media screen and (max-width: 767px) {
+  #mainWorkspace { height: calc(100dvh - 56px) !important; }
+}
+
+/* Sidebar collapse desktop + ruang aman After Hatch. */
+@media screen and (min-width: 1024px) {
+  #appRoot.sidebar-collapsed #appSidebar { display: none !important; }
+  #appRoot.sidebar-collapsed #mainWorkspace { width: 100% !important; }
+  #appRoot.sidebar-collapsed #showSidebarBtn { display: inline-flex !important; }
+  #appRoot.sidebar-collapsed #hideSidebarBtn { display: none !important; }
+  #appRoot:not(.sidebar-collapsed) #hideSidebarBtn { display: inline-flex !important; }
+}
+#panel-AH .grid.grid-cols-2,
+.bay-panel[data-bay-panel="AH"] .grid.grid-cols-2 {
+  max-width: 560px !important;
+  column-gap: 6rem !important;
+}
+#panel-AH .slot-card { min-width: 0; }
+@media screen and (max-width: 767px) {
+  #panel-AH .grid.grid-cols-2,
+  .bay-panel[data-bay-panel="AH"] .grid.grid-cols-2 {
+    max-width: 100% !important;
+    column-gap: 1.5rem !important;
+  }
+}
+
+/* Cetak PDF A4 Portrait: dua Bay tersusun vertikal per halaman. */
+@page { size: A4 portrait; margin: 5mm; }
+@media print {
+  .print-page { height: 285mm !important; max-height: 285mm !important; }
+  .print-page-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-rows: repeat(2,135mm) !important;
+    grid-auto-rows: 135mm !important;
+    height: 273mm !important; min-height: 273mm !important; max-height: 273mm !important;
+    gap: 3mm !important;
+  }
+  .print-page-grid .bay-panel {
+    height: 135mm !important; min-height: 135mm !important; max-height: 135mm !important;
+  }
+  .print-page-grid .bay-panel > div:first-child { flex-basis: 9mm !important; min-height: 9mm !important; }
+  .print-page-grid .bay-panel > div:nth-child(2) { max-height: 126mm !important; }
+  .print-page-grid .bay-panel .slot-card { height: 23mm !important; max-height: 23mm !important; }
+  .print-page-grid .bay-panel aside { max-height: 100% !important; }
+  #appRoot.sidebar-collapsed #appSidebar, #showSidebarBtn, #importContainerBtn, #importContainerFile { display:none !important; }
+}
