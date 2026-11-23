@@ -90,8 +90,12 @@ function slotCardHTML(b, s, isDashed = false) {
     weightLabel = blocker.weight !== '' ? `${esc(formatHalfWeight(blocker.weight))} T` : `DARI ${blockerCellNo}`;
   }
 
-  const loadPort = activeContainer ? esc(normalizePort(activeContainer.loadingPort) || '—') : '';
-  const discPort = activeContainer ? esc(normalizePort(activeContainer.port) || '—') : '';
+  const loadPort = activeContainer
+    ? esc(normalizePort(activeContainer.loadingPort) || normalizePort($('stowageLoadingPort')?.value) || '—')
+    : '';
+  const discPort = activeContainer
+    ? esc(normalizePort(activeContainer.port) || normalizePort($('stowageDestinationPort')?.value) || '—')
+    : '';
 
   return `
     <div id="cell-${esc(b)}-${s}" data-bay="${esc(b)}" data-slot="${s}"

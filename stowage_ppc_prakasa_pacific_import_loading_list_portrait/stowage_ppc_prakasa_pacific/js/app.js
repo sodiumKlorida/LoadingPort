@@ -318,8 +318,14 @@ $('bays').addEventListener('dragend', () => {
 $('shipName').addEventListener('input', save);
 $('voyage').addEventListener('input', save);
 $('stowageDate')?.addEventListener('change', save);
-$('stowageLoadingPort')?.addEventListener('change', save);
-$('stowageDestinationPort')?.addEventListener('change', save);
+$('stowageLoadingPort')?.addEventListener('change', () => {
+    save();
+    render(true);
+});
+$('stowageDestinationPort')?.addEventListener('change', () => {
+    save();
+    render(true);
+});
 $('clearAllBtn').addEventListener('click', clearAll);
 $('resetAllBtn')?.addEventListener('click', clearAll);
 $('containerActionsMenu')?.addEventListener('click', (e) => {
