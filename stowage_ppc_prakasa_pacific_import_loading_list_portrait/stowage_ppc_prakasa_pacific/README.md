@@ -10,20 +10,17 @@ Baris pertama (header) harus persis seperti ini:
 Satu baris = satu kontainer yang benar-benar diletakkan pada posisi kapal. Jangan isi data posisi secara manual saat aplikasi sedang dipakai, kecuali untuk migrasi awal.
 
 ## 2. Konfigurasi SheetDB
-SheetDB harus terhubung ke spreadsheet yang sama. Aplikasi mengaksesnya melalui fungsi serverless `/api/sheetdb`; URL SheetDB disimpan di environment variable server `SHEETDB_API_URL` dan tidak dikirim ke browser.
+SheetDB harus terhubung ke spreadsheet yang sama. Saat ini aplikasi memanggil SheetDB langsung dari browser agar tetap berjalan pada hosting statis. `.env` dan fungsi serverless `/api/sheetdb` hanya disiapkan untuk opsi backend di kemudian hari; browser tidak membaca `.env`.
 
-- URL SheetDB yang digunakan saat ini disimpan di `.env` lokal tanpa parameter `?sheet=`; `.env` diabaikan Git.
-- Untuk pengembangan lokal melalui `vercel dev`, gunakan `.env.local` dengan variabel yang sama.
-- Di Vercel, tambahkan `SHEETDB_API_URL` pada **Project Settings → Environment Variables** untuk setiap environment yang digunakan.
-- Jalankan secara lokal melalui `vercel dev` agar fungsi `/api` dan environment variable tersedia.
-- Jangan commit `.env` atau `.env.local`. Endpoint yang sama tetap digunakan; memindahkannya sekarang tidak menghapus salinan yang mungkin sudah ada di riwayat Git.
+- Jangan commit `.env` atau `.env.local`; keduanya diabaikan Git.
+- Jika nanti beralih ke proxy, set `SHEETDB_API_URL` di Vercel **Project Settings → Environment Variables** dan deploy fungsi `/api/sheetdb`.
 
 ## 3. Deploy ke Vercel
 Upload seluruh isi folder project dengan struktur:
 - `index.html`
 - `css/style.css`
 - `js/*.js`
-- `api/sheetdb.js`
+- `api/sheetdb.js` (opsional; belum dipakai aplikasi saat ini)
 
 Commit/push ke GitHub, atur `SHEETDB_API_URL` di Vercel, lalu tunggu deployment selesai. Semua visitor harus membuka URL deployment yang sama.
 
@@ -47,7 +44,7 @@ Print diatur A4 portrait dengan dua panel Bay tersusun atas-bawah per halaman (d
 - Matikan Header and Footer browser
 
 ## Catatan penting sebelum dipakai ramai-ramai
-Versi ini memakai SheetDB sebagai penyimpanan bersama dengan polling 7 detik. Dua orang yang mengedit posisi yang sama hampir bersamaan masih dapat menghasilkan konflik (last write wins). Untuk penggunaan operasional multi-user yang kritis, backend dengan transaksi/locking dan autentikasi (mis. Supabase/Firebase) lebih aman. Fungsi `/api/sheetdb` menyembunyikan URL SheetDB dan hanya meneruskan GET/POST untuk dua tab yang diizinkan, tetapi endpoint proxy tetap publik dan belum mengautentikasi pengguna. Tambahkan autentikasi server-side jika operasi tulis harus dibatasi untuk pengguna tertentu.
+Versi ini memakai SheetDB sebagai penyimpanan bersama dengan polling 7 detik. Dua orang yang mengedit posisi yang sama hampir bersamaan masih dapat menghasilkan konflik (last write wins). Saat ini endpoint SheetDB dipanggil langsung dari browser sehingga dapat dilihat pengunjung. Untuk penggunaan operasional multi-user yang kritis, backend dengan transaksi/locking dan autentikasi (mis. Supabase/Firebase) lebih aman. Fungsi `/api/sheetdb` yang disiapkan belum digunakan aplikasi; jika diaktifkan nanti, tambahkan autentikasi server-side bila operasi tulis harus dibatasi untuk pengguna tertentu.
 
 Sebelum penggunaan produksi, uji tambah, edit, hapus, 40 FT, dan buka URL dari dua perangkat/browser sekaligus.
 
