@@ -129,9 +129,9 @@ function slotCardHTML(b, s, isDashed = false) {
         : `<span class="select-none text-transparent">&nbsp;</span>`
     }
       </div>
-        ${isBlocked ? `<span class="pointer-events-none absolute inset-0 z-50 flex items-center justify-center print:z-50" aria-hidden="true">
-          <span class="text-black text-[7rem] md:text-[10rem] lg:text-[11rem] font-black leading-none print:text-5xl">×</span>
-        </span>` : ''}
+        ${isBlocked ? `<svg class="pointer-events-none absolute inset-0 z-50 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M 0 0 L 100 100 M 100 0 L 0 100" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        </svg>` : ''}
     </div>
   `;
 }
