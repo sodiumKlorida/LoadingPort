@@ -463,36 +463,164 @@ function deleteRecord() {
     }
 }
 
+let resetInProgress = false;
+
 function clearAll() {
-    if (!confirm('Reset posisi stowage, data import lokal, dan informasi voyage? Database master Google Sheets tidak dihapus. Tekan Unggah setelah reset untuk mengosongkan posisi di server.')) return;
+    const modal = $('resetChoiceModal');
+    const status = $('resetChoiceStatus');
+    if (!modal || resetInProgress) return;
 
-    records = [];
-    databaseRows = [];
-    selectedDatabaseRow = null;
-    $('shipName').value = 'PRAKASA PACIFIC';
-    $('voyage').value = '';
-    $('stowageDate').value = '';
-    $('stowageLoadingPort').value = '';
-    $('stowageDestinationPort').value = '';
-    $('search').value = '';
-    handleContainerSearch(false);
+    status.textContent = '';
+    status.classList.add('hidden');
+    $('cancelResetChoiceBtn').textContent = 'Batal';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    $('resetBayOnlyBtn').focus();
+}
 
-    const importCacheRemoved = safeStorageRemove('stowageImportedContainersV1');
-    let databaseCacheRemoved = true;
-    try {
-        sessionStorage.removeItem(DB_CACHE_KEY);
-    } catch (err) {
-        databaseCacheRemoved = false;
-        console.error('Cache database sesi tidak dapat dihapus:', err);
+function setResetProcessing(processing) {
+    resetInProgress = processing;
+    $('resetBayOnlyBtn').disabled = processing;
+    $('clearAllDataBtn').disabled = processing;
+    $('cancelResetChoiceBtn').disabled = processing;
+}
+
+function showResetStatus(message, isError = true) {
+    const status = $('resetChoiceStatus');
+    status.textContent = message;
+    status.classList.remove('hidden', 'text-rose-700', 'text-emerald-700');
+    status.classList.add(isError ? 'text-rose-700' : 'text-emerald-700');
+}
+
+function closeResetChoice() {
+    if (resetInProgress) return;
+    const modal = $('resetChoiceModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    $('resetAllBtn').focus();
+}
+
+async function deleteAllMasterContainers() {
+    const url = new URL(SHEETDB_API_URL);
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}/all`;
+    url.search = '';
+    url.searchParams.set('sheet', 'CONTAINER_DATABASE');
+
+    const response = await fetch(url.toString(), { method: 'DELETE', mode: 'cors' });
+    const body = await response.text();
+    if (!response.ok) {
+        throw new Error(`SheetDB HTTP ${response.status}${body ? `: ${body}` : ''}`);
     }
 
-    save();
-    renderAvailableContainerCards();
-    if ($('availableDbStatus')) $('availableDbStatus').textContent = 'Data lokal direset. Refresh DB untuk memuat ulang database master.';
-    if (!importCacheRemoved || !databaseCacheRemoved) {
-        alert('Reset tampilan selesai, tetapi sebagian cache browser tidak dapat dihapus. Periksa izin penyimpanan browser.');
+    if (!body) return null;
+    try {
+        const result = JSON.parse(body);
+        const deletedCount = Number(result.deleted);
+        return Number.isFinite(deletedCount) ? deletedCount : null;
+    } catch (err) {
+        console.warn('Jumlah baris terhapus tidak dapat dibaca dari respons SheetDB:', err);
+        return null;
     }
 }
+
+async function applyReset(clearMasterDatabase) {
+    if (resetInProgress) return;
+    if (!cloudReady) {
+        showResetStatus('Data server belum selesai dimuat. Tunggu sebentar lalu coba lagi.');
+        return;
+    }
+    if (cloudBusy) {
+        showResetStatus('Sinkronisasi sedang berjalan. Coba lagi setelah proses tersebut selesai.');
+        return;
+    }
+
+    const previousRecords = records;
+    const previousSearch = $('search').value;
+    const previousVoyage = {
+        shipName: $('shipName').value,
+        voyage: $('voyage').value,
+        stowageDate: $('stowageDate').value,
+        stowageLoadingPort: $('stowageLoadingPort').value,
+        stowageDestinationPort: $('stowageDestinationPort').value
+    };
+
+    setResetProcessing(true);
+    showResetStatus('Menyimpan snapshot Bay kosong ke server...', false);
+
+    records = [];
+    if (clearMasterDatabase) {
+        $('shipName').value = 'PRAKASA PACIFIC';
+        $('voyage').value = '';
+        $('stowageDate').value = '';
+        $('stowageLoadingPort').value = '';
+        $('stowageDestinationPort').value = '';
+    }
+    $('search').value = '';
+    handleContainerSearch(false);
+    save();
+
+    try {
+        await pushResetSnapshot();
+    } catch (err) {
+        records = previousRecords;
+        $('search').value = previousSearch;
+        $('shipName').value = previousVoyage.shipName;
+        $('voyage').value = previousVoyage.voyage;
+        $('stowageDate').value = previousVoyage.stowageDate;
+        $('stowageLoadingPort').value = previousVoyage.stowageLoadingPort;
+        $('stowageDestinationPort').value = previousVoyage.stowageDestinationPort;
+        save();
+        handleContainerSearch(false);
+        showResetStatus(`Snapshot kosong tidak dapat dikonfirmasi ke server. Tampilan lokal dikembalikan; periksa SheetDB sebelum mencoba lagi. ${err.message}`);
+        setResetProcessing(false);
+        return;
+    }
+
+    if (clearMasterDatabase) {
+        let deletedCount;
+        try {
+            deletedCount = await deleteAllMasterContainers();
+        } catch (err) {
+            showResetStatus(`Konten Bay sudah dikosongkan di server, tetapi database master gagal dihapus dan tetap dipertahankan. ${err.message}`);
+            setResetProcessing(false);
+            return;
+        }
+
+        databaseRows = [];
+        selectedDatabaseRow = null;
+        const sidebarSearch = $('sidebarContainerSearch');
+        if (sidebarSearch) sidebarSearch.value = '';
+        const databaseSearch = $('dbSearch');
+        if (databaseSearch) databaseSearch.value = '';
+        const importedCacheRemoved = safeStorageRemove('stowageImportedContainersV1');
+        let databaseCacheRemoved = true;
+        try {
+            sessionStorage.removeItem(DB_CACHE_KEY);
+        } catch (err) {
+            databaseCacheRemoved = false;
+            console.error('Cache database sesi tidak dapat dihapus:', err);
+        }
+
+        renderAvailableContainerCards();
+        const deletedMessage = deletedCount === null
+            ? 'Database master berhasil dihapus.'
+            : `${deletedCount} baris database master dihapus.`;
+        if ($('availableDbStatus')) $('availableDbStatus').textContent = `Semua data berhasil dikosongkan. ${deletedMessage}`;
+        const cacheWarning = importedCacheRemoved && databaseCacheRemoved
+            ? ''
+            : ' Sebagian cache browser tidak dapat dihapus.';
+        showResetStatus(`Semua data berhasil dikosongkan. ${deletedMessage}${cacheWarning}`, !importedCacheRemoved || !databaseCacheRemoved);
+    } else {
+        showResetStatus('Konten Bay berhasil dikosongkan dan snapshot kosong sudah disimpan. Database kontainer dan data voyage tetap ada.', false);
+    }
+
+    setResetProcessing(false);
+    $('cancelResetChoiceBtn').textContent = 'Tutup';
+}
+
+$('resetBayOnlyBtn')?.addEventListener('click', () => applyReset(false));
+$('clearAllDataBtn')?.addEventListener('click', () => applyReset(true));
+$('cancelResetChoiceBtn')?.addEventListener('click', closeResetChoice);
 
 function updateMobileSidebarOffset() {
     const dock = $('containerDock');

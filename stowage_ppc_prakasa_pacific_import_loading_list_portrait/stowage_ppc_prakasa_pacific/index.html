@@ -293,7 +293,7 @@
                             <button type="button" id="manualCloudSyncBtn" disabled class="container-dock-sync">↥ Unggah</button>
                             <button type="button" id="resetAllBtn"
                                 class="container-dock-action border-rose-200 text-rose-700 hover:bg-rose-50"
-                                title="Reset posisi, data impor lokal, dan informasi voyage">Reset Data</button>
+                                title="Pilih reset konten Bay atau semua data">Reset Data</button>
                         </div>
                     </details>
                     <span id="cloudSyncStatus" class="container-dock-status">Menghubungkan...</span>
@@ -331,6 +331,36 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div id="resetChoiceModal"
+        class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:hidden"
+        role="dialog" aria-modal="true" aria-labelledby="resetChoiceTitle">
+        <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <h2 id="resetChoiceTitle" class="text-base font-extrabold text-slate-900">Pilih data yang akan dikosongkan</h2>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                Reset konten Bay saja atau hapus semua data termasuk database master Google Sheets.
+            </p>
+            <div class="mt-5 grid gap-2">
+                <button type="button" id="resetBayOnlyBtn"
+                    class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-left transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60">
+                    <span class="block text-sm font-bold text-sky-900">Reset konten Bay saja</span>
+                    <span class="mt-1 block text-xs leading-relaxed text-sky-800">Kosongkan posisi Bay dan simpan snapshot kosong. Database kontainer dan data voyage tetap ada.</span>
+                </button>
+                <button type="button" id="clearAllDataBtn"
+                    class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-left transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60">
+                    <span class="block text-sm font-bold text-rose-900">Kosongkan semua data + DB</span>
+                    <span class="mt-1 block text-xs leading-relaxed text-rose-800">Reset posisi Bay dan hapus seluruh baris database kontainer bersama di Google Sheets.</span>
+                </button>
+            </div>
+            <p id="resetChoiceStatus" class="mt-3 hidden text-xs font-semibold leading-relaxed text-rose-700" role="status" aria-live="polite"></p>
+            <div class="mt-4 flex justify-end">
+                <button type="button" id="cancelResetChoiceBtn"
+                    class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60">
+                    Batal
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Form Kontainer -->

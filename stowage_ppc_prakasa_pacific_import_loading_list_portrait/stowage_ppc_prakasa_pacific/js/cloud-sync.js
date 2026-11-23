@@ -191,6 +191,21 @@ async function pushLocalChanges() {
   safeStorageSet('stowageCloudDirty', '0');
   cloudStatus(`Berhasil sinkron · ${records.length} kontainer · 1 request`);
 }
+
+async function pushResetSnapshot() {
+  if (!cloudReady) throw new Error('Sinkronisasi server belum siap. Tunggu sampai data server selesai dimuat.');
+  if (cloudBusy) throw new Error('Sinkronisasi sedang berjalan. Coba lagi setelah selesai.');
+
+  cloudBusy = true;
+  setSyncButtonBusy(true);
+  try {
+    await pushLocalChanges();
+  } finally {
+    cloudBusy = false;
+    setSyncButtonBusy(false);
+  }
+}
+
 async function pullLatestChanges() {
   await loadCloudPositions();
   cloudLocalDirty = false;

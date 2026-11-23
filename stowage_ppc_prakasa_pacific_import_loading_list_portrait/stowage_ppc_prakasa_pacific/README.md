@@ -122,4 +122,4 @@ Aplikasi juga menerima beberapa nama alias saat membaca database, tetapi susunan
 - Nomor yang muncul lebih dari sekali hanya menyimpan satu baris. Baris Excel terakhir untuk nomor yang sama menjadi data terbaru.
 - Data hasil import disimpan lokal di browser pada key `stowageImportedContainersV1`.
 - Tombol **Unggah DB** mengirim hanya data import unik ke tab `CONTAINER_DATABASE`. Tunggu pemberitahuan berhasil lalu tekan **Refresh DB** jika daftar belum diperbarui.
-- Tombol **Reset Data** menghapus posisi stowage, data import/cache lokal, dan informasi voyage pada browser. Database master Google Sheets tidak dihapus; tekan **Unggah** untuk menyimpan snapshot posisi kosong ke server.
+- Tombol **Reset Data** membuka pilihan reset konten Bay saja atau mengosongkan semua data. Reset Bay menyimpan snapshot kosong ke SheetDB dan mempertahankan database master serta metadata voyage. Opsi semua juga menghapus baris database kontainer `CONTAINER_DATABASE` dan membersihkan cache/import serta metadata voyage lokal. Jika pengosongan Bay berhasil tetapi penghapusan database gagal, modal melaporkan bahwa operasi hanya selesai sebagian.
