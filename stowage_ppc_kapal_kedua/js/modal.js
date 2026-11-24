@@ -371,18 +371,56 @@ function closeClearDataModal() {
     modal.classList.remove('flex');
 }
 
-function clearAllData(includeLocalDatabase = false) {
-    records = [];
-    save();
-    handleContainerSearch(false);
+async function clearAllData(includeLocalDatabase = false) {
+    if (!includeLocalDatabase) {
+        records = [];
+        save();
+        handleContainerSearch(false);
+        return;
+    }
 
-    if (!includeLocalDatabase) return;
+    if (!window.StowageAPI || typeof window.StowageAPI.resetImportedDatabase !== 'function') {
+        alert('Koneksi Laravel API belum siap. Database tidak diubah.');
+        return;
+    }
 
-    databaseRows = databaseRows.filter((row) => String(row.source || '').toUpperCase() !== 'IMPORT');
+    const confirmed = confirm(
+        'RESET SELURUH DATABASE KONTTAINER IMPORT?\n\n' +
+        'Semua posisi stowage di seluruh voyage dan plan akan dikosongkan. ' +
+        'Semua master kontainer hasil import Excel akan dihapus. ' +
+        'Kontainer manual, voyage, plan, dan histori snapshot tetap dipertahankan.\n\n' +
+        'Tindakan ini tidak dapat dibatalkan.'
+    );
+    if (!confirmed) return;
 
-    renderAvailableContainerCards();
-    if ($('availableDbStatus')) {
-        $('availableDbStatus').textContent = 'Daftar ditampilkan dari Laravel API. Data master tidak dihapus.';
+    const button = $('clearLocalDatabaseBtn');
+    if (button) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = 'Mereset database...';
+    }
+
+    try {
+        const result = await window.StowageAPI.resetImportedDatabase();
+        records = [];
+        if (typeof render === 'function') render(false);
+        if (typeof updateSummary === 'function') updateSummary();
+        handleContainerSearch(false);
+        if (typeof renderAvailableContainerCards === 'function') renderAvailableContainerCards();
+        const removedPositions = Number(result.deleted_positions ?? 0);
+        const removedContainers = Number(result.deleted_containers ?? 0);
+        const message = `Reset berhasil. ${removedPositions} posisi dikosongkan dan ${removedContainers} kontainer import dihapus.`;
+        if ($('availableDbStatus')) $('availableDbStatus').textContent = message;
+        alert(message);
+    } catch (error) {
+        console.error('Reset database gagal:', error);
+        alert(`Reset database gagal: ${error.message}\n\nTidak ada perubahan yang dianggap berhasil. Periksa endpoint Laravel dan log server.`);
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || 'Reset Database';
+            delete button.dataset.originalText;
+        }
     }
 }
 

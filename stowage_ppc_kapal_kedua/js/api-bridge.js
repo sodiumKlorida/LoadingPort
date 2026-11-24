@@ -40,6 +40,18 @@
 
   const unwrap = (body) => Array.isArray(body?.data) ? body.data : (body?.data?.data || []);
   window.StowageAPI = {
+    async resetImportedDatabase() {
+      // Prevent an older debounced save from recreating positions after reset.
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+      }
+      await saveQueue;
+      const result = await apiRequest('/containers/imported/reset', { method: 'DELETE' });
+      // Refresh the master pool from MySQL after the server-side transaction.
+      await loadContainerPool();
+      return result.data || result;
+    },
     async createContainer(container) {
       const created = await apiRequest('/containers', {
         method: 'POST',

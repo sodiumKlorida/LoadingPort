@@ -291,9 +291,9 @@ $('clearContentOnlyBtn').addEventListener('click', () => {
     closeClearDataModal();
     clearAllData(false);
 });
-$('clearLocalDatabaseBtn').addEventListener('click', () => {
+$('clearLocalDatabaseBtn').addEventListener('click', async () => {
+    await clearAllData(true);
     closeClearDataModal();
-    clearAllData(true);
 });
 $('cancelClearDataBtn').addEventListener('click', closeClearDataModal);
 $('clearDataModal').addEventListener('click', (e) => {
