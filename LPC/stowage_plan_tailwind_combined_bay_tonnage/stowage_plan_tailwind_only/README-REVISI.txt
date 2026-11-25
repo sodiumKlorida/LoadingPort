@@ -228,3 +228,24 @@ REVISI LAYOUT TABLET
   menggeser #bays (scrollTop 600) tanpa menggeser body/html; toggle membuka drawer
   pada 900/800px; hit-test di area sidebar jatuh ke sidebar, bukan dock.
 - Cetak tetap 1 halaman A4 Portrait setelah perubahan breakpoint (595x842 pt).
+
+
+REVISI POLLING AJAX SINKRONISASI POSISI
+- AJAX dipasang di frontend (js/api-bridge.js), bukan di backend. Backend cukup
+  menyediakan JSON; route yang dipakai tetap GET /plans/{plan}/positions.
+- Setelah data awal siap, frontend menjalankan polling setiap 5000 ms. Jika tanda
+  tangan posisi berubah, records diperbarui dan Bay digambar ulang dengan
+  render(true) agar posisi scroll user tidak melompat.
+- Tanda tangan diambil dari snapshot_no/version/updated_at bila tersedia,
+  digabung dengan daftar id/container_id/bay/slot/cell_no/mov/dir40. Jika tidak
+  ada perubahan, polling tidak menggambar ulang UI.
+- Polling ditunda saat tab tersembunyi, skeleton masih aktif, proses save belum
+  selesai / localDirty, dragging berlangsung, atau plan sedang dimuat. Setelah
+  save/clear berhasil, tanda tangan dikosongkan agar kondisi kanonis diambil lagi.
+- Fungsi manual untuk pengujian: window.syncStowageNow().
+- Opsi backend (tidak wajib): sertakan snapshot_no atau updated_at pada response
+  GET /plans/{plan}/positions agar deteksi perubahan lebih murah.
+- Pengujian browser mock: polling manual menambah posisi user lain tanpa refresh;
+  polling otomatis 5 detik juga bekerja; tidak ada render ulang saat data sama;
+  polling tidak menimpa data saat draggedItem aktif. Regresi skeleton, tablet,
+  dan cetak 1 halaman A4 tetap lulus.

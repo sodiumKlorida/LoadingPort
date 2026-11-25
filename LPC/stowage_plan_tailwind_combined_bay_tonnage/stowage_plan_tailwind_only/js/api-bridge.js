@@ -14,6 +14,14 @@
   let loadingPlan = false;
   let apiContainersByNumber = new Map();
 
+  // Polling sinkronisasi antar user. Route yang dipakai tetap GET /plans/{plan}/positions.
+  const POLL_INTERVAL_MS = 5000;
+  let pollTimer = null;
+  let pollingInFlight = false;
+  let lastPlanSignature = null;
+  let localDirty = false;
+  let saveInFlight = false;
+
   const apiRequest = async (path, options = {}) => {
     const response = await fetch(`${API_BASE}${path}`, {
       ...options,
@@ -300,6 +308,62 @@
     };
   }
 
+  // Tanda tangan posisi dipakai agar polling tidak menggambar ulang Bay bila
+  // respons dari Laravel sama dengan kondisi yang sedang ditampilkan.
+  function getPlanSignature(body, positions) {
+    const rows = JSON.stringify(positions.map((p) => [
+      p.id ?? '', p.container_id ?? '', p.bay ?? '', p.slot ?? '',
+      p.cell_no ?? '', p.mov ?? '', p.dir40 ?? ''
+    ].join('|')).sort());
+    const explicit = body?.data?.snapshot_no ?? body?.data?.version ?? body?.data?.updated_at
+      ?? body?.snapshot_no ?? body?.version ?? body?.updated_at;
+    if (explicit !== undefined && explicit !== null && explicit !== '') return `v:${explicit}:${rows}`;
+    return rows;
+  }
+
+  function shouldSkipPolling() {
+    if (!activePlanId || loadingPlan || pollingInFlight) return true;
+    if (saveTimer || saveInFlight || localDirty) return true;
+    if (typeof draggedItem !== 'undefined' && draggedItem) return true;
+    const bays = document.getElementById('bays');
+    if (bays && bays.dataset.skeleton === '1') return true;
+    return false;
+  }
+
+  async function pollActivePlan() {
+    if (shouldSkipPolling()) return;
+    // Tidak perlu memenuhi server saat tab tidak terlihat.
+    if (document.visibilityState === 'hidden') return;
+
+    pollingInFlight = true;
+    try {
+      const body = await apiRequest(`/plans/${activePlanId}/positions`);
+      const positions = body.data?.positions || [];
+      const signature = getPlanSignature(body, positions);
+      if (signature === lastPlanSignature) return;
+
+      lastPlanSignature = signature;
+      records = positions.map(mapPosition);
+      if (typeof render === 'function') render(true);
+      if (typeof updateSummary === 'function') updateSummary();
+      if (typeof renderAvailableContainerCards === 'function') renderAvailableContainerCards();
+      setApiStatus(`Sinkron otomatis · ${records.length} posisi`);
+    } catch (err) {
+      // Polling berjalan terus; jangan memunculkan alert tiap beberapa detik.
+      console.warn('[Stowage polling]', err.message);
+    } finally {
+      pollingInFlight = false;
+    }
+  }
+
+  function startPlanPolling() {
+    if (pollTimer) return;
+    pollTimer = window.setInterval(pollActivePlan, POLL_INTERVAL_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') pollActivePlan();
+    });
+  }
+
   async function loadActivePlan() {
     if (!activePlanId || loadingPlan) return;
     loadingPlan = true;
@@ -307,6 +371,8 @@
     try {
       const body = await apiRequest(`/plans/${activePlanId}/positions`);
       const positions = body.data?.positions || [];
+      lastPlanSignature = getPlanSignature(body, positions);
+      localDirty = false;
       records = positions.map(mapPosition);
       if (typeof render === 'function') render(false);
       if (typeof updateSummary === 'function') updateSummary();
@@ -350,30 +416,38 @@
 
   async function persistPositionsNow() {
     if (!activePlanId || loadingPlan) return;
-    const payloadPositions = [];
-    for (const record of records) {
-      if (record.bay === 'AH') {
-        throw new Error('Posisi AFTER HATCH (AH) belum didukung oleh skema API PPC saat ini.');
+    saveInFlight = true;
+    try {
+      const payloadPositions = [];
+      for (const record of records) {
+        if (record.bay === 'AH') {
+          throw new Error('Posisi AFTER HATCH (AH) belum didukung oleh skema API PPC saat ini.');
+        }
+        const layout = CELL_LAYOUT[Number(record.slot)];
+        if (!layout) throw new Error(`Slot ${record.slot} tidak memiliki CELL_LAYOUT.`);
+        const containerId = await ensureContainerId(record);
+        payloadPositions.push({
+          container_id: containerId,
+          bay: Number(record.bay),
+          slot: Number(record.slot),
+          cell_no: String(record.cellNo || getCellNo(record.bay, record.slot)),
+          row_no: Number(layout.row),
+          tier: Number(layout.tier),
+          dir40: record.size === '40 FT' ? (record.dir40 || null) : null,
+          mov: Number(record.mov || 1)
+        });
       }
-      const layout = CELL_LAYOUT[Number(record.slot)];
-      if (!layout) throw new Error(`Slot ${record.slot} tidak memiliki CELL_LAYOUT.`);
-      const containerId = await ensureContainerId(record);
-      payloadPositions.push({
-        container_id: containerId,
-        bay: Number(record.bay),
-        slot: Number(record.slot),
-        cell_no: String(record.cellNo || getCellNo(record.bay, record.slot)),
-        row_no: Number(layout.row),
-        tier: Number(layout.tier),
-        dir40: record.size === '40 FT' ? (record.dir40 || null) : null,
-        mov: Number(record.mov || 1)
+      const body = await apiRequest(`/plans/${activePlanId}/positions`, {
+        method: 'PUT',
+        body: JSON.stringify({ positions: payloadPositions })
       });
+      setApiStatus(`Tersimpan ke Laravel · snapshot ${body.data?.snapshot_no ?? '-'} · ${records.length} posisi`);
+      localDirty = false;
+      // Biarkan polling mengambil lagi kondisi kanonis setelah save berhasil.
+      lastPlanSignature = null;
+    } finally {
+      saveInFlight = false;
     }
-    const body = await apiRequest(`/plans/${activePlanId}/positions`, {
-      method: 'PUT',
-      body: JSON.stringify({ positions: payloadPositions })
-    });
-    setApiStatus(`Tersimpan ke Laravel · snapshot ${body.data?.snapshot_no ?? '-'} · ${records.length} posisi`);
   }
 
   // Batasi debounce/save queue sebelum operasi reset agar posisi lama tidak
@@ -400,6 +474,8 @@
       body: JSON.stringify({ positions: [] })
     });
     records = [];
+    localDirty = false;
+    lastPlanSignature = null;
     if (typeof render === 'function') render(false);
     if (typeof updateSummary === 'function') updateSummary();
     if (typeof renderAvailableContainerCards === 'function') renderAvailableContainerCards();
@@ -426,8 +502,10 @@
     if (typeof updateStowageContext === 'function') updateStowageContext();
     if (typeof updateSummary === 'function') updateSummary();
     if (typeof renderAvailableContainerCards === 'function') renderAvailableContainerCards();
+    localDirty = true;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
+      saveTimer = null;
       saveQueue = saveQueue.then(persistPositionsNow).catch(err => {
         setApiStatus(`Gagal menyimpan ke API: ${err.message}`, true);
       });
@@ -448,9 +526,13 @@
   // Initialize immediately so the legacy window-load handlers use the API loader.
   // Skeleton ditampilkan oleh app.js sebelum script ini berjalan; tutup di sini
   // setelah container/voyage/plan selesai dimuat (atau gagal).
+  window.syncStowageNow = pollActivePlan;
+
   window.__stowageInitializing = true;
   initializeApiBridge().finally(() => {
     window.__stowageInitializing = false;
     if (typeof hideAppSkeleton === 'function') hideAppSkeleton();
+    // Mulai sinkronisasi otomatis antar user setelah data awal siap.
+    startPlanPolling();
   });
 })();
