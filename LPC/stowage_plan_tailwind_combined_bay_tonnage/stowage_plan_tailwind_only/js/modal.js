@@ -425,10 +425,12 @@ async function clearAllContainersAndBay() {
 function openMobileSidebar() {
     $('appSidebar').classList.remove('-translate-x-full');
     $('sidebarBackdrop').classList.remove('hidden');
+    if (typeof updateDockSidebarToggle === 'function') updateDockSidebarToggle();
 }
 
 function closeMobileSidebar() {
     $('appSidebar').classList.add('-translate-x-full');
     $('sidebarBackdrop').classList.add('hidden');
+    if (typeof updateDockSidebarToggle === 'function') updateDockSidebarToggle();
 }
 

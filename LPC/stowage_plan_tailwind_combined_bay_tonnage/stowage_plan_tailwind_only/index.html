@@ -20,7 +20,7 @@
 </head>
 
 <body
-    class="min-h-dvh overflow-x-hidden bg-slate-100 font-sans text-slate-900 antialiased selection:bg-sky-200 selection:text-sky-900 lg:h-dvh lg:overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
+    class="min-h-dvh overflow-x-hidden bg-slate-100 font-sans text-slate-900 antialiased selection:bg-sky-200 selection:text-sky-900 md:h-dvh md:overflow-hidden lg:h-dvh lg:overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
         <!-- Tailwind print utility safelist: dipakai oleh print-layout.js saat membuat halaman cetak. -->
     <div class="hidden print:block print:flex print:hidden print:w-full print:m-0 print:p-0 print:h-[285mm] print:max-h-[285mm] print:flex-col print:gap-[3mm] print:overflow-hidden print:break-after-page print:px-[2mm] print:py-[2mm] print:h-[13mm] print:min-h-[13mm] print:shrink-0 print:items-center print:justify-between print:border-b-2 print:border-slate-900 print:pb-[1mm] print:min-h-0 print:flex-1 print:rounded-lg print:shadow-none print:h-auto print:max-h-none print:min-w-0 print:break-inside-avoid print:border-slate-800 print:overflow-visible print:bg-white print:box-border print:h-[277mm] print:max-h-[277mm] print:gap-[2mm] print:px-[1mm] print:py-[1mm] print:h-[10mm] print:min-h-[10mm] print:max-h-[10mm] print:h-[126mm] print:min-h-[126mm] print:flex-none print:gap-[2mm] print:grid print:grid-cols-2 print:rounded print:border print:p-[1.5mm] print:px-[1mm] print:pb-[0.5mm] print:text-[8pt] print:font-extrabold print:tracking-widest print:shrink print:whitespace-normal print:break-all print:text-[6px] print:text-[7px] print:text-[8px] print:leading-[1.1] print:border-slate-400 print:h-[60mm] print:min-h-[60mm] print:max-h-[60mm] print:h-[8mm] print:min-h-[8mm] print:max-h-[8mm] print:text-[5px] print:text-[10px] print:min-h-[34px] print:px-0.5 print:py-0 print:gap-0.5 print:p-0.5 print:p-1 print:pb-0.5 print:content-start print:leading-none print:text-[6pt] print:grid-cols-[minmax(0,1fr)_60px] print:grid-cols-4 print:h-[78mm] print:min-h-[78mm] print:max-h-[78mm] print:text-[44px] relative absolute inset-0 z-50 z-10"></div>
     <!-- Tailwind safelist untuk skeleton loading yang dibuat dari JS. -->
@@ -58,15 +58,15 @@
 
     <!-- Main App Shell: Left Sidebar + Right Workspace -->
     <div id="appRoot"
-        class="mx-auto flex min-h-dvh w-full max-w-[1920px] flex-col lg:h-dvh lg:min-h-0 lg:flex-row lg:overflow-hidden print:hidden">
+        class="mx-auto flex min-h-dvh w-full max-w-[1920px] flex-col md:h-dvh md:min-h-0 md:overflow-hidden lg:h-dvh lg:min-h-0 lg:flex-row lg:overflow-hidden print:hidden">
         <!-- Backdrop for Mobile/Tablet Drawer Sidebar -->
         <div id="sidebarBackdrop"
-            class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm lg:hidden print:hidden">
+            class="fixed inset-0 z-[85] hidden bg-slate-950/60 backdrop-blur-sm lg:hidden print:hidden">
         </div>
 
         <!-- Left Control Sidebar (Tablet md: drawer overlay agar Bay full width; Desktop lg: static sidebar) -->
         <aside id="appSidebar"
-            class="fixed inset-y-0 left-0 z-40 flex w-[min(82vw,310px)] shrink-0 -translate-x-full flex-col gap-3.5 overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-slate-100 p-3.5 transition-transform duration-200 lg:static lg:h-dvh lg:w-[clamp(228px,22vw,276px)] lg:translate-x-0 lg:p-3 print:hidden">
+            class="fixed inset-y-0 left-0 z-[90] flex w-[min(82vw,310px)] shrink-0 -translate-x-full flex-col gap-3.5 overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-slate-100 p-3.5 transition-transform duration-200 lg:static lg:h-dvh lg:w-[clamp(228px,22vw,276px)] lg:translate-x-0 lg:p-3 print:hidden">
 
             <!-- VIEW 1: MAIN MENU -->
             <div id="sidebarMainMenu" class="flex flex-1 flex-col gap-3.5">
@@ -247,7 +247,7 @@
 
         <!-- Right Workspace Content (Prioritaskan area Bay pada Tablet & Desktop) -->
         <main id="mainWorkspace"
-            class="relative flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 sm:p-3 lg:h-dvh lg:overflow-hidden lg:p-3 print:block print:h-auto print:overflow-visible print:p-0">
+            class="relative flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 sm:p-3 md:overflow-hidden lg:h-dvh lg:overflow-hidden lg:p-3 print:block print:h-auto print:overflow-visible print:p-0">
 
 
             <nav id="bayNavButtons" class="hidden" aria-hidden="true"></nav>

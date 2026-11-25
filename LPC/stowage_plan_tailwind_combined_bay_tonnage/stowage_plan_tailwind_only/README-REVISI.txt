@@ -212,3 +212,19 @@ REVISI SKELETON LOADING
 - Pengujian: node --check semua JS; unit counter skeleton; simulasi browser dengan
   API mock untuk page load, reset, clear, dan import menunjukkan skeleton muncul
   lalu hilang, dengan urutan DELETE reset -> PUT positions [] -> GET containers.
+
+
+REVISI LAYOUT TABLET
+- Scroll vertikal Bay sekarang aktif mulai breakpoint md (768px): halaman tidak
+  ikut bergeser, area #bays yang melakukan scroll internal dengan dock tetap di atas.
+- Toggle panel samping memakai breakpoint Tailwind lg (1024px) yang sebenarnya.
+  Di 900-1023px tombol ">" sekarang membuka drawer sidebar (sebelumnya hanya
+  menambah kelas lg:hidden yang tidak berpengaruh).
+- Sidebar drawer dinaikkan ke z-[90] dan backdrop ke z-[85], sehingga List
+  Container (z-[80]) tidak lagi menindih sidebar saat drawer dibuka.
+- Ikon toggle ikut diperbarui saat drawer dibuka/ditutup, dan drawer ditutup
+  otomatis saat viewport berubah ke desktop.
+- Pengujian headless Chrome pada 1024x768, 900x1200, dan 800x1280: scroll mouse
+  menggeser #bays (scrollTop 600) tanpa menggeser body/html; toggle membuka drawer
+  pada 900/800px; hit-test di area sidebar jatuh ke sidebar, bukan dock.
+- Cetak tetap 1 halaman A4 Portrait setelah perubahan breakpoint (595x842 pt).

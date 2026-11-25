@@ -1,7 +1,19 @@
 // Satu kontrol toggle ditempatkan di sebelah kiri judul LIST CONTAINER.
+// Breakpoint harus sama dengan Tailwind `lg` (1024px): di bawah itu sidebar
+// adalah drawer overlay, bukan sidebar statis.
+const isDesktopLayout = () => window.matchMedia('(min-width: 1024px)').matches;
+
+function isSidebarCollapsed() {
+    const sidebar = $('appSidebar');
+    if (!sidebar) return false;
+    return isDesktopLayout()
+        ? sidebar.classList.contains('lg:hidden')
+        : sidebar.classList.contains('-translate-x-full');
+}
+
 function updateDockSidebarToggle() {
     const btn = $('sidebarDockToggle');
-    const collapsed = $('appSidebar')?.classList.contains('lg:hidden') || false;
+    const collapsed = isSidebarCollapsed();
     if (!btn) return;
     btn.innerHTML = collapsed
         ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6" /></svg>'
@@ -11,15 +23,18 @@ function updateDockSidebarToggle() {
     btn.setAttribute('aria-expanded', String(!collapsed));
 }
 $('sidebarDockToggle')?.addEventListener('click', () => {
-    if (window.innerWidth >= 900) {
+    if (isDesktopLayout()) {
         $('appSidebar')?.classList.toggle('lg:hidden');
         updateDockSidebarToggle();
     } else {
-        const isOpen = !$('appSidebar')?.classList.contains('-translate-x-full');
-        if (isOpen) closeMobileSidebar(); else openMobileSidebar();
+        if (isSidebarCollapsed()) openMobileSidebar(); else closeMobileSidebar();
     }
 });
-window.addEventListener('resize', updateDockSidebarToggle);
+window.addEventListener('resize', () => {
+    // Saat resize ke desktop, tutup drawer agar tidak tertinggal terbuka.
+    if (isDesktopLayout() && typeof closeMobileSidebar === 'function') closeMobileSidebar();
+    else updateDockSidebarToggle();
+});
 updateDockSidebarToggle();
 
 function printStowage() {
