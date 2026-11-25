@@ -1,0 +1,17 @@
+PATCH WAJIB UNTUK LARAVEL - ContainerController.php
+
+Pada method import(), di dalam $request->validate([...]), pastikan kedua field ini ikut divalidasi:
+
+'containers.*.loading_port' => ['nullable', 'string', 'max:100'],
+'containers.*.destination_port' => ['nullable', 'string', 'max:100'],
+
+Contoh letakkan bersama aturan field lainnya, sebelum penutup array validasi.
+
+Pastikan kedua kolom tersedia di tabel containers dan tercantum pada $fillable model Container.
+Method Container::create($row) akan menyimpan field yang lolos validasi dan diizinkan $fillable.
+
+PENTING:
+- Excel Loading List yang diberikan memiliki Sheet LL, kolom NO CONTAINER, Tonase, Description, Seal, 20', 40', Remarks. Excel tersebut tidak memiliki kolom pelabuhan.
+- Karena itu nilai pelabuhan untuk setiap kontainer diambil dari form sidebar (Pelabuhan Awal dan Pelabuhan Tujuan) saat proses import.
+- Kontainer yang sudah terlanjur tersimpan dengan loading_port/destination_port NULL perlu diperbarui. Menambahkan validasi tidak otomatis mengisi data lama.
+- Tidak perlu migration jika kedua kolom sudah ada.

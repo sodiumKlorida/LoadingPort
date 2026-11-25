@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stowage Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Penguncian kertas cetak: preview tidak berantakan saat dialog browser
+         default ke Letter atau margin yang lebih besar dari A4. -->
+    <style>
+        @page { size: A4 portrait; margin: 8mm; }
+        @media print {
+            html, body { background: #fff !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+    <!-- Orientasi cetak diubah oleh tombol Portrait/Landscape (ui-state.js). -->
+    <style id="printOrientationStyle"></style>
+</head>
+
+<body
+    class="min-h-dvh overflow-x-hidden bg-slate-100 font-sans text-slate-900 antialiased selection:bg-sky-200 selection:text-sky-900 lg:h-dvh lg:overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
+        <!-- Tailwind print utility safelist: dipakai oleh print-layout.js saat membuat halaman cetak. -->
+    <div class="hidden print:block print:flex print:hidden print:w-full print:m-0 print:p-0 print:h-[285mm] print:max-h-[285mm] print:flex-col print:gap-[3mm] print:overflow-hidden print:break-after-page print:px-[2mm] print:py-[2mm] print:h-[13mm] print:min-h-[13mm] print:shrink-0 print:items-center print:justify-between print:border-b-2 print:border-slate-900 print:pb-[1mm] print:min-h-0 print:flex-1 print:rounded-lg print:shadow-none print:h-auto print:max-h-none print:min-w-0 print:break-inside-avoid print:border-slate-800 print:overflow-visible print:bg-white print:box-border print:h-[277mm] print:max-h-[277mm] print:gap-[2mm] print:px-[1mm] print:py-[1mm] print:h-[10mm] print:min-h-[10mm] print:max-h-[10mm] print:h-[126mm] print:min-h-[126mm] print:flex-none print:gap-[2mm] print:grid print:grid-cols-2 print:rounded print:border print:p-[1.5mm] print:px-[1mm] print:pb-[0.5mm] print:text-[8pt] print:font-extrabold print:tracking-widest print:shrink print:whitespace-normal print:break-all print:text-[6px] print:text-[7px] print:text-[8px] print:leading-[1.1] print:border-slate-400 print:h-[60mm] print:min-h-[60mm] print:max-h-[60mm] print:h-[8mm] print:min-h-[8mm] print:max-h-[8mm] print:text-[5px] print:text-[10px] print:min-h-[34px] print:px-0.5 print:py-0 print:gap-0.5 print:p-0.5 print:p-1 print:pb-0.5 print:content-start print:leading-none print:text-[6pt] print:grid-cols-[minmax(0,1fr)_60px] print:grid-cols-4 print:h-[78mm] print:min-h-[78mm] print:max-h-[78mm] print:text-[44px] relative absolute inset-0 z-50 z-10"></div>
+    <!-- Tailwind safelist untuk skeleton loading yang dibuat dari JS. -->
+    <div class="hidden min-w-[165px] basis-[220px] max-w-[240px] min-h-11 min-h-[300px] animate-pulse bg-slate-100 bg-slate-200 bg-white h-2.5 h-3 h-4 h-14 w-9 w-10 w-20 w-24 grid-cols-2 grid-cols-4 gap-2 gap-3 rounded rounded-lg rounded-xl rounded-2xl border-2 border-slate-200 p-2 p-3 shadow-sm text-xs font-black tracking-widest text-slate-300 uppercase"></div>
+    <!-- Mobile Top Header (hanya < 768px) -->
+    <header
+        class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-slate-900 px-4 py-3 text-white shadow-md md:hidden print:hidden">
+        <div class="flex items-center gap-2.5">
+            <div
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500 font-black text-slate-950">
+                LPC
+            </div>
+            <div class="min-w-0">
+                <h1 class="truncate text-sm font-bold tracking-wide">STOWAGE PLAN</h1>
+                <p id="mobileShipSub" class="truncate text-[11px] text-slate-300">KM LOTUS PACIFIC</p>
+            </div>
+        </div>
+        <div class="flex shrink-0 items-center gap-2">
+            <button type="button" id="mobilePrintBtn"
+                class="rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-bold text-slate-950 transition hover:bg-sky-400">
+                PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Print-Only Header -->
+    <div id="printHeader"
+        class="hidden border-b-2 border-slate-900 px-3 py-2 print:hidden">
+        <div>
+            <h1 class="text-base font-extrabold tracking-wide text-slate-900 print:text-[10px] print:leading-[1.3]">STOWAGE PLAN</h1>
+            <p id="printSubtitle" class="text-[11px] font-medium text-slate-600 print:text-[7px] print:leading-[1.3]">KM LOTUS PACIFIC</p>
+        </div>
+        <div id="printSummaryLine" class="text-right text-[11px] font-semibold text-slate-700 print:text-[7px] print:leading-[1.3]"></div>
+    </div>
+
+    <!-- Main App Shell: Left Sidebar + Right Workspace -->
+    <div id="appRoot"
+        class="mx-auto flex min-h-dvh w-full max-w-[1920px] flex-col lg:h-dvh lg:min-h-0 lg:flex-row lg:overflow-hidden print:hidden">
+        <!-- Backdrop for Mobile/Tablet Drawer Sidebar -->
+        <div id="sidebarBackdrop"
+            class="fixed inset-0 z-30 hidden bg-slate-950/60 backdrop-blur-sm lg:hidden print:hidden">
+        </div>
+
+        <!-- Left Control Sidebar (Tablet md: drawer overlay agar Bay full width; Desktop lg: static sidebar) -->
+        <aside id="appSidebar"
+            class="fixed inset-y-0 left-0 z-40 flex w-[min(82vw,310px)] shrink-0 -translate-x-full flex-col gap-3.5 overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-slate-100 p-3.5 transition-transform duration-200 lg:static lg:h-dvh lg:w-[clamp(228px,22vw,276px)] lg:translate-x-0 lg:p-3 print:hidden">
+
+            <!-- VIEW 1: MAIN MENU -->
+            <div id="sidebarMainMenu" class="flex flex-1 flex-col gap-3.5">
+                <!-- Brand Card -->
+                <div class="rounded-2xl bg-slate-900 p-4 text-white shadow-md">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-lg font-extrabold tracking-tight text-white">STOWAGE PLAN</h1>
+                        <button type="button" id="closeSidebarBtn"
+                            class="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden">
+                            &#x2715;
+                        </button>
+                    </div>
+                    <p class="mt-0.5 text-xs text-slate-400">Manajemen Posisi Kontainer &amp; V.MOV</p>
+
+                    <!-- Vessel & Voyage Inputs -->
+                    <div class="mt-3.5 space-y-2 border-t border-slate-800 pt-3">
+                        <div>
+                            <label for="shipName"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Nama
+                                Kapal</label>
+                            <input id="shipName" value="PRAKASA PACIFIC"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white placeholder-slate-400 transition focus:border-sky-400 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label for="voyage"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Kode
+                                Voyage</label>
+                            <input id="voyage" placeholder="Contoh: VOY. 12"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white placeholder-slate-400 transition focus:border-sky-400 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label for="stowageDate"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Tanggal
+                                Stowage</label>
+                            <input id="stowageDate" type="date"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white transition focus:border-sky-400 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label for="stowageLoadingPort"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Pelabuhan
+                                Awal</label>
+                            <input id="stowageLoadingPort" placeholder="Contoh: SURABAYA"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                        <div>
+                            <label for="stowageDestinationPort"
+                                class="mb-1 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Pelabuhan
+                                Tujuan</label>
+                            <input id="stowageDestinationPort" placeholder="Contoh: MAKASSAR"
+                                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-400/30">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Summary Bento Card -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md">
+                    <div class="mb-2.5 flex items-center justify-between">
+                        <h2 class="text-xs font-bold tracking-wider text-slate-500 uppercase">Ringkasan Muatan</h2>
+                        <span
+                            class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">REALTIME</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <span class="block text-[11px] font-medium text-slate-500">Total Unit</span>
+                            <strong id="mTotal" class="mt-0.5 block text-lg font-extrabold text-slate-900">0</strong>
+                        </div>
+                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <span class="block text-[11px] font-medium text-slate-500">Total V.MOV</span>
+                            <div class="mt-0.5 flex items-baseline gap-1">
+                                <strong id="mMov" class="text-lg font-extrabold text-slate-900">0.00</strong>
+                                <span class="text-[10px] font-bold text-slate-400">TON</span>
+                            </div>
+                        </div>
+                        <div class="rounded-xl border border-sky-200 bg-sky-50 p-2.5">
+                            <span class="block text-[11px] font-semibold text-sky-700">20 FT</span>
+                            <strong id="m20" class="mt-0.5 block text-lg font-extrabold text-sky-900">0</strong>
+                        </div>
+                        <div class="rounded-xl border border-amber-200 bg-amber-50 p-2.5">
+                            <span class="block text-[11px] font-semibold text-amber-700">40 FT</span>
+                            <strong id="m40" class="mt-0.5 block text-lg font-extrabold text-amber-900">0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Card (Container Number Only) -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md">
+                    <h2 class="mb-2.5 text-xs font-bold tracking-wider text-slate-500 uppercase">Pencarian Kontainer
+                    </h2>
+                    <div class="space-y-2">
+                        <div>
+                            <label for="search" class="mb-1 block text-xs font-semibold text-slate-700">Cari Nomor
+                                Kontainer</label>
+                            <div class="relative">
+                                <input id="search" placeholder="Ketik nomor kontainer..."
+                                    class="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 pr-8 pl-3 font-mono text-xs font-semibold text-slate-900 uppercase transition placeholder:font-sans placeholder:font-normal placeholder:normal-case focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <button type="button" id="clearSearchBtn" title="Hapus pencarian"
+                                    class="hidden absolute top-1/2 right-2 -translate-y-1/2 rounded-md px-1.5 py-0.5 text-xs font-bold text-slate-400 transition hover:bg-slate-200 hover:text-slate-700">
+                                    &#x2715;
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Search Match Feedback & Quick Jump Pills -->
+                        <div id="searchResultBox"
+                            class="hidden space-y-1.5 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                            <p id="searchStatusText" class="text-[11px] font-semibold text-slate-700"></p>
+                            <div id="searchMatchList" class="flex flex-wrap gap-1.5"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend & Prototype Note -->
+                <div class="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-md">
+                    <h2 class="mb-2 text-xs font-bold tracking-wider text-slate-500 uppercase">Keterangan Warna</h2>
+                    <div class="space-y-1.5 text-xs text-slate-600">
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-sky-400 bg-sky-100"></span>
+                            <span>Kontainer <strong>20 FT</strong> terisi</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-amber-400 bg-amber-100"></span>
+                            <span>Kontainer <strong>40 FT</strong> (1/2 berat per bay)</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span
+                                class="h-3.5 w-3.5 shrink-0 rounded-md border border-dashed border-amber-500 bg-amber-50"></span>
+                            <span>Pasangan bay <strong>40 FT</strong> (1/2 berat)</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-slate-300 bg-white"></span>
+                            <span>Posisi kosong (klik untuk isi)</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span
+                                class="h-3.5 w-3.5 shrink-0 rounded-md border-2 border-dashed border-slate-500 bg-white"></span>
+                            <span>Tier 84 / After Hatch</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Primary & Secondary Actions -->
+                <div class="mt-auto space-y-2 pt-1">
+                    <div>
+                        <p class="mb-1 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Orientasi
+                            Cetak</p>
+                        <div class="grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+                            <button type="button" id="printPortraitBtn"
+                                class="rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm transition"
+                                aria-pressed="true">Portrait</button>
+                            <button type="button" id="printLandscapeBtn"
+                                class="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-500 transition hover:text-slate-900"
+                                aria-pressed="false">Landscape</button>
+                        </div>
+                    </div>
+                    <button type="button" id="printPdfBtn"
+                        class="flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-sky-600 px-4 text-sm font-bold text-white shadow-md transition hover:bg-sky-700">
+                        <span id="printPdfBtnLabel">Cetak / Simpan PDF (Portrait)</span>
+                    </button>
+                    <button type="button" id="importContainerBtn"
+                        class="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50">
+                        ↑ Import Excel
+                    </button>
+                    <input type="file" id="importContainerFile" accept=".xlsx,.xls,.csv" class="hidden">
+                    <button type="button" id="clearAllBtn"
+                        class="flex h-11 w-full items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-4 text-sm font-bold text-amber-900 shadow-sm transition hover:bg-amber-100">
+                        Kosongkan Data Container
+                    </button>
+                    <p class="px-1 text-[11px] leading-relaxed text-slate-400">
+                        Catatan: Pencatatan posisi visual prototype. Stabilitas &amp; batas stack wajib diverifikasi
+                        dari
+                        dokumen
+                        teknis resmi kapal.
+                    </p>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Right Workspace Content (Prioritaskan area Bay pada Tablet & Desktop) -->
+        <main id="mainWorkspace"
+            class="relative flex min-h-0 min-w-0 flex-1 flex-col gap-2 p-2 sm:p-3 lg:h-dvh lg:overflow-hidden lg:p-3 print:block print:h-auto print:overflow-visible print:p-0">
+
+
+            <nav id="bayNavButtons" class="hidden" aria-hidden="true"></nav>
+
+            <!-- Fixed container dock: search, filter, status and drag list -->
+            <section id="containerDock"
+                class="sticky top-0 z-[80] w-full min-w-0 shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-md print:hidden">
+                <div class="flex justify-between mb-2">
+                    
+                    <!-- <div
+                    class="grid min-w-0 grid-cols-1 items-center gap-2 p-2 sm:grid-cols-[max-content_minmax(0,1fr)_minmax(120px,0.7fr)_minmax(130px,0.8fr)_40px] md:grid-cols-[max-content_minmax(140px,1fr)_minmax(120px,135px)_minmax(130px,150px)_40px] lg:grid-cols-[max-content_minmax(160px,1fr)_minmax(112px,135px)_minmax(130px,150px)_40px]"> -->
+
+                    <div class="flex min-w-0 items-center gap-3 sm:col-span-1">
+                        <button type="button" id="sidebarDockToggle"
+                            class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                            title="Sembunyikan panel samping" aria-label="Sembunyikan panel samping"
+                            aria-expanded="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2.2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 18l-6-6 6-6" />
+                            </svg>
+                        </button>
+
+                        <div class="flex min-w-0 shrink-0 flex-col leading-tight">
+                            <strong class="whitespace-nowrap text-xs font-bold tracking-wide text-slate-900">LIST
+                                CONTAINER</strong>
+                            <span id="availableDbStatus" class="whitespace-nowrap text-[10px] text-slate-500">Memuat
+                                data...</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input id="sidebarContainerSearch" aria-label="Cari nomor kontainer"
+                            placeholder="Cari nomor kontainer..."
+                            class="h-10 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+
+                        <select id="sidebarSizeFilterSelect"
+                            class="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                            aria-label="Filter ukuran kontainer">
+                            <option value="ALL">Semua ukuran</option>
+                            <option value="20">20 FT</option>
+                            <option value="40">40 FT</option>
+                        </select>
+                        <select id="tonnageSort"
+                            class="h-10 w-full min-w-0 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                            aria-label="Urutkan berdasarkan tonase">
+                            <option value="none">Tonase: Default</option>
+                            <option value="asc">Tonase: Terendah</option>
+                            <option value="desc">Tonase: Tertinggi</option>
+                        </select>
+                        <button type="button" id="refreshSidebarDbBtn"
+                            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-wait disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
+                            title="Muat ulang daftar kontainer" aria-label="Muat ulang daftar kontainer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 7v5h-5M4 17v-5h5" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M5.6 9a7 7 0 0 1 11.8-2L20 12M4 12l2.6 5a7 7 0 0 0 11.8-2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="availableContainerCards"
+                    class="flex min-w-0 items-stretch gap-2 overflow-x-auto overflow-y-hidden overscroll-x-contain py-1 [scrollbar-width:thin]">
+                    <div class="flex items-center whitespace-nowrap px-2 py-1 text-xs text-slate-500">Memuat daftar
+                        kontainer...</div>
+                </div>
+            </section>
+
+            <!-- <div id="stowageContextBar" class="shrink-0 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold text-sky-950 print:hidden">
+                <span id="stowageContextText">Informasi stowage belum diisi</span>
+            </div> -->
+
+            <!-- All Bays Horizontal Scroll Area -->
+            <section id="bays"
+                class="mt-3 flex min-h-0 flex-1 flex-col items-stretch gap-4 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-2 [touch-action:pan-y] [-webkit-overflow-scrolling:touch] lg:mt-2 print:hidden">
+            </section>
+
+            <!-- Trash Drop Zone (Muncul di bawah saat drag container yang sudah ada di Bay) -->
+            <div id="trashDropZone"
+                class="pointer-events-none fixed inset-x-4 bottom-4 z-40 hidden items-center justify-center print:hidden">
+                <div id="trashDropTarget"
+                    class="pointer-events-auto flex w-full max-w-md items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-red-400 bg-red-600/95 px-6 py-4 text-white shadow-2xl backdrop-blur-sm transition-all duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2.2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <div class="text-left">
+                        <p class="text-xs sm:text-sm font-extrabold tracking-wide uppercase">Buang Kontainer dari Bay
+                        </p>
+                        <p class="text-[11px] font-medium text-red-100">Lepaskan di sini untuk menghapus posisi muatan
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Konfirmasi Pengosongan Data -->
+    <div id="clearDataModal"
+        class="fixed inset-0 z-[210] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:hidden"
+        role="dialog" aria-modal="true" aria-labelledby="clearDataTitle">
+        <div class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <h2 id="clearDataTitle" class="text-lg font-extrabold text-slate-900">Reset data stowage</h2>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                Pilih tindakan yang ingin dilakukan. Tombol merah menghapus permanen <strong>semua kontainer</strong>
+                (hasil import Excel maupun input manual) dari database Laravel dan tidak dapat dibatalkan.
+            </p>
+            <div class="mt-5 grid gap-2">
+                <button type="button" id="clearContentOnlyBtn"
+                    class="rounded-xl bg-amber-500 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-amber-600 disabled:cursor-wait disabled:opacity-60">
+                    Kosongkan Bay Content
+                    <span class="mt-0.5 block text-xs font-medium text-amber-50">Hapus seluruh posisi kontainer pada plan
+                        aktif. Data master kontainer tetap tersimpan.</span>
+                </button>
+                <button type="button" id="clearImportedBtn"
+                    class="rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-left text-sm font-bold text-rose-900 transition hover:bg-rose-100 disabled:cursor-wait disabled:opacity-60">
+                    Hapus permanen semua kontainer
+                    <span class="mt-0.5 block text-xs font-medium text-rose-800">Hapus seluruh kontainer (import Excel
+                        dan input manual) dari database Laravel, lalu kosongkan Bay Content.</span>
+                </button>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button type="button" id="cancelClearDataBtn"
+                    class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-100">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form Kontainer -->
+    <div id="modal"
+        class="fixed inset-0 z-[200] hidden items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm print:hidden">
+        <div
+            class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
+            <div class="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <span id="modalBadge"
+                        class="inline-block rounded-lg bg-sky-100 px-2.5 py-0.5 text-[11px] font-bold text-sky-900">
+                        CELL
+                    </span>
+                    <h3 id="modalTitle" class="mt-1 text-base font-extrabold text-slate-900">Data Kontainer</h3>
+                </div>
+                <button type="button" id="closeModalIconBtn"
+                    class="rounded-xl p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                    aria-label="Tutup">
+                    &#x2715;
+                </button>
+            </div>
+
+            <form id="containerForm">
+                <input type="hidden" id="recordId">
+                <input type="hidden" id="fBay">
+                <input type="hidden" id="fSlot">
+
+                <!-- Source Mode Tabs -->
+                <div id="sourceChooser" class="mb-4">
+                    <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+                        <button type="button" id="showDatabaseBtn"
+                            class="rounded-lg bg-white px-3 py-2 text-xs font-bold text-sky-700 shadow-sm transition">
+                            Database Laravel API
+                        </button>
+                        <button type="button" id="showManualBtn"
+                            class="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 transition hover:text-slate-900">
+                            Input Manual
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Laravel API database panel -->
+                <div id="databasePanel" class="hidden space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <label for="dbSearch" class="text-xs font-bold text-slate-700">Cari Nomor Kontainer</label>
+                        <input id="dbSearch" placeholder="Ketik nomor kontainer..."
+                            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label for="dbSelect" class="text-xs font-bold text-slate-700">Pilih dari Daftar
+                            Database</label>
+                        <select id="dbSelect" size="6"
+                            class="w-full rounded-xl border border-slate-300 bg-white p-2 text-xs text-slate-900 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                            <option value="">Memuat data...</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <p id="dbStatus" class="text-xs text-slate-500"></p>
+
+                    </div>
+                </div>
+
+                <!-- Manual Input / Edit Panel -->
+                <div id="manualPanel" class="hidden">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <label for="fNumber" class="mb-1 block text-xs font-bold text-slate-700">Nomor
+                                Kontainer</label>
+                            <input id="fNumber" placeholder="Contoh: TGHU123456-7" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-sm font-semibold text-slate-900 uppercase focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                        </div>
+                        <div>
+                            <label for="fType" class="mb-1 block text-xs font-bold text-slate-700">Type
+                                Container</label>
+                            <select id="fType" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <option value="DC">DC</option>
+                                <option value="HC">HC</option>
+                                <option value="RF">RF</option>
+                                <option value="OD">OD</option>
+                                <option value="FR">FR</option>
+                                <option value="TK">TK</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fFeet" class="mb-1 block text-xs font-bold text-slate-700">Ukuran (Feet)</label>
+                            <select id="fFeet" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                                <option value="20 FT">20 FT</option>
+                                <option value="40 FT">40 FT</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fWeight" class="mb-1 block text-xs font-bold text-slate-700">Berat Total 1 Unit
+                                (Ton)</label>
+                            <input id="fWeight" type="number" min="0" step="0.01" placeholder="0.00" required
+                                class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
+                        </div>
+
+                        <!-- Arah 40 FT (Depan / Belakang) -->
+                        <div id="dir40Container"
+                            class="hidden sm:col-span-2 rounded-xl border border-amber-300 bg-amber-50/80 p-3">
+                            <div class="mb-2 flex items-center justify-between gap-2">
+                                <label class="text-xs font-extrabold text-amber-950">Arah Penempatan 40 FT (2
+                                    Bay)</label>
+                                <span
+                                    class="rounded-md bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-950">Berat
+                                    dibagi 2</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label id="dirForwardLabel"
+                                    class="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 transition hover:bg-amber-100/60">
+                                    <input type="radio" name="f40Dir" id="dirForward" value="forward"
+                                        class="accent-amber-600">
+                                    <span id="dirForwardText">Ke Depan (menuju Bay 01)</span>
+                                </label>
+                                <label id="dirBackwardLabel"
+                                    class="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 transition hover:bg-amber-100/60">
+                                    <input type="radio" name="f40Dir" id="dirBackward" value="backward"
+                                        class="accent-amber-600">
+                                    <span id="dirBackwardText">Ke Belakang (menuju Bay 13)</span>
+                                </label>
+                            </div>
+                            <p id="dir40Preview" class="mt-2 text-[11px] font-semibold text-amber-900"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                    <button type="button" id="deleteBtn"
+                        class="hidden rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-900 shadow-sm transition hover:bg-amber-100">
+                        Hapus Kontainer
+                    </button>
+                    <div class="ml-auto flex gap-2">
+                        <button type="button" id="cancelModalBtn"
+                            class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-100">
+                            Batal
+                        </button>
+                        <button type="submit" id="saveContainerBtn"
+                            class="rounded-xl bg-sky-600 px-5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-sky-700">
+                            Simpan Data
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        // Backend Laravel melalui tunnel ngrok aktif.
+        window.STOWAGE_API_BASE = 'https://wrench-regular-glitzy.ngrok-free.dev/api';
+    </script>
+    <script src="js/config.js"></script>
+    <script src="js/ui-state.js"></script>
+    <script src="js/stowage-rules.js"></script>
+    <script src="js/drag-state.js"></script>
+    <script src="js/calculations-utils.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/api-bridge.js"></script>
+    <script src="js/print-layout.js"></script>
+</body>
+
+</html>
