@@ -128,8 +128,13 @@
 
   function setApiStatus(message, isError = false) {
     // Tidak menampilkan teks "Menghubungkan..." yang menetap di antarmuka.
-    // Error tetap dicatat di console agar tidak mengganggu area kerja.
-    if (isError) console.error('[Laravel API]', message);
+    if (isError) {
+      console.error('[Laravel API]', message);
+      // Tampilkan error singkat di dock supaya kegagalan update ukuran
+      // (misal size_ft tidak masuk $fillable) tidak terlihat seperti sukses.
+      const dockStatus = document.getElementById('availableDbStatus');
+      if (dockStatus) dockStatus.textContent = `Error API: ${String(message).slice(0, 90)}`;
+    }
   }
 
   function mapApiContainer(c) {
@@ -414,6 +419,13 @@
           body: JSON.stringify({ size_ft: desiredFt })
         });
         const mapped = mapApiContainer(updated.data || updated);
+        const savedFt = sizeFtFromLabel(mapped.feet || mapped.size);
+        if (savedFt !== desiredFt) {
+          throw new Error(
+            `Laravel mengembalikan ${savedFt} FT untuk ${record.number}, padahal dikirim ${desiredFt} FT. ` +
+            'Periksa $fillable size_ft dan validasi size_ft di ContainerController.'
+          );
+        }
         const idx = databaseRows.findIndex((row) => Number(row.id) === Number(mapped.id));
         if (idx >= 0) databaseRows[idx] = { ...databaseRows[idx], ...mapped };
         apiContainersByNumber.set(key, { ...known, ...mapped });
@@ -439,6 +451,13 @@
     const c = created.data;
     if (!c?.id) throw new Error(`API tidak mengembalikan ID untuk kontainer ${record.number}`);
     const mapped = mapApiContainer(c);
+    const savedFt = sizeFtFromLabel(mapped.feet || mapped.size);
+    if (savedFt !== desiredFt) {
+      throw new Error(
+        `Laravel membuat ${savedFt} FT untuk ${record.number}, padahal dikirim ${desiredFt} FT. ` +
+        'Periksa $fillable size_ft dan validasi size_ft di method store().'
+      );
+    }
     databaseRows.push(mapped);
     apiContainersByNumber.set(key, mapped);
     record.containerId = mapped.id;
