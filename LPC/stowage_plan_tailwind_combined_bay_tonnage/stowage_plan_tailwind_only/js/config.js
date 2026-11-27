@@ -14,6 +14,12 @@ function sizeFtFromLabel(value) {
     return Number(normalizeSizeLabel(value).replace(/\D/g, ''));
 }
 
+// 20 FT dan 21 FT menempati 1 cell, jadi boleh saling diubah.
+// 40 FT memakai 2 bay + arah Depan/Belakang, jadi tidak boleh diubah lewat edit.
+function isSingleCellSize(value) {
+    return [20, 21].includes(sizeFtFromLabel(value));
+}
+
 let databaseRows = [];
 let selectedDatabaseRow = null;
 let activeBay = 13;

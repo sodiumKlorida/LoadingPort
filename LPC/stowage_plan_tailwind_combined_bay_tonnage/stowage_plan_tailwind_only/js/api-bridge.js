@@ -386,13 +386,44 @@
   }
 
   async function ensureContainerId(record) {
-    if (record.containerId) return Number(record.containerId);
     const key = normalizeNo(record.number);
-    const known = apiContainersByNumber.get(key);
+    const desiredFt = sizeFtFromLabel(record.size);
+    const known = apiContainersByNumber.get(key)
+      || databaseRows.find((row) => Number(row.id) === Number(record.containerId));
+
     if (known) {
-      record.containerId = known.id;
-      return known.id;
+      const currentFt = sizeFtFromLabel(known.feet || known.size);
+
+      // Pengaman kedua: jangan pernah mengirim PUT yang menyangkut 40 FT,
+      // walau kondisi di form sudah berubah (misal dari hasil polling).
+      if (
+        currentFt !== desiredFt &&
+        !(isSingleCellSize(currentFt) && isSingleCellSize(desiredFt))
+      ) {
+        throw new Error(
+          `Ukuran ${currentFt} FT tidak dapat diubah menjadi ${desiredFt} FT lewat update. ` +
+          'Hanya 20 FT ↔ 21 FT yang diizinkan.'
+        );
+      }
+
+      // Edit 20 FT ↔ 21 FT: perbarui master container agar tidak kembali ke
+      // ukuran lama saat posisi diambil ulang dari Laravel.
+      if (currentFt !== desiredFt) {
+        const updated = await apiRequest(`/containers/${known.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ size_ft: desiredFt })
+        });
+        const mapped = mapApiContainer(updated.data || updated);
+        const idx = databaseRows.findIndex((row) => Number(row.id) === Number(mapped.id));
+        if (idx >= 0) databaseRows[idx] = { ...databaseRows[idx], ...mapped };
+        apiContainersByNumber.set(key, { ...known, ...mapped });
+      }
+      record.containerId = Number(known.id);
+      return Number(known.id);
     }
+
+    if (record.containerId) return Number(record.containerId);
+
     const created = await apiRequest('/containers', {
       method: 'POST',
       body: JSON.stringify({
@@ -437,6 +468,8 @@
           mov: Number(record.mov || 1)
         });
       }
+      // Master bisa berubah ukuran (20 FT ↔ 21 FT) saat loop di atas.
+      if (typeof renderAvailableContainerCards === 'function') renderAvailableContainerCards();
       const body = await apiRequest(`/plans/${activePlanId}/positions`, {
         method: 'PUT',
         body: JSON.stringify({ positions: payloadPositions })

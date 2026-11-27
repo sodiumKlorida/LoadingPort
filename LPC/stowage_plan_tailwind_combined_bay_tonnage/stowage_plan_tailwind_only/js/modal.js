@@ -320,15 +320,20 @@ function submitContainer(e) {
         return;
     }
 
-    // Ukuran posisi diambil dari master container di Laravel saat reload.
-    // Jika nomor sudah terdaftar dengan ukuran lain, input manual akan ditimpa.
+    // Hanya 20 FT ↔ 21 FT yang boleh diubah; master ikut di-update saat save.
+    // Transisi yang menyangkut 40 FT dilarang di FE dan BE (butuh 2 bay + arah).
     const master = databaseRows.find(
         (x) => String(x.number || '').trim().toUpperCase() === number
     );
-    if (master && normalizeSizeLabel(master.feet || master.size) !== size) {
+    const masterSize = master ? normalizeSizeLabel(master.feet || master.size) : null;
+    if (
+        masterSize &&
+        masterSize !== size &&
+        !(isSingleCellSize(masterSize) && isSingleCellSize(size))
+    ) {
         alert(
-            `Nomor ${number} sudah terdaftar di database sebagai ${normalizeSizeLabel(master.feet || master.size)}. ` +
-            `Ukuran ${size} tidak akan tersimpan setelah sinkronisasi. Gunakan nomor lain atau ubah data master di Laravel.`
+            `Ukuran ${masterSize} tidak dapat diubah menjadi ${size} lewat edit. ` +
+            `Hanya 20 FT ↔ 21 FT yang diizinkan; 40 FT harus dibuat/dihapus sebagai penempatan 2 bay.`
         );
         return;
     }
