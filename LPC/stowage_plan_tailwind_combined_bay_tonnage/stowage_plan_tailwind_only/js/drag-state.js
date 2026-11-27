@@ -6,7 +6,7 @@ function getDraggedSpec() {
         return {
             id: null,
             number: c.number,
-            size: c.feet.includes('40') ? '40 FT' : '20 FT',
+            size: normalizeSizeLabel(c.feet || c.size),
             loadingPort: c.loadingPort,
             port: c.port,
             weight: c.weight,

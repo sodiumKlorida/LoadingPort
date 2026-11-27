@@ -47,9 +47,10 @@ function renderAvailableContainerCards() {
     );
 
     const filteredRows = availableRows.filter((r) => {
-        const is40 = r.feet.includes('40');
-        if (sidebarSizeFilter === '20' && is40) return false;
-        if (sidebarSizeFilter === '40' && !is40) return false;
+        if (
+            sidebarSizeFilter !== 'ALL' &&
+            sizeFtFromLabel(r.feet || r.size) !== Number(sidebarSizeFilter)
+        ) return false;
 
         if (!searchQuery) return true;
         const haystack = String(r.number || '').toLowerCase();
@@ -82,14 +83,19 @@ function renderAvailableContainerCards() {
 
     cardsEl.innerHTML = filteredRows
         .map((r) => {
-            const is40 = r.feet.includes('40');
-            const sizeLabel = is40 ? '40 FT' : '20 FT';
+            const sizeLabel = normalizeSizeLabel(r.feet || r.size);
+            const is40 = sizeLabel === '40 FT';
+            const is21 = sizeLabel === '21 FT';
             const cardBorder = is40
                 ? 'border-amber-300 bg-amber-50/75 hover:border-amber-500'
-                : 'border-sky-300 bg-sky-50/75 hover:border-sky-500';
+                : is21
+                    ? 'border-violet-300 bg-violet-50/75 hover:border-violet-500'
+                    : 'border-sky-300 bg-sky-50/75 hover:border-sky-500';
             const badgeStyle = is40
                 ? 'bg-amber-200 text-amber-950'
-                : 'bg-sky-200 text-sky-950';
+                : is21
+                    ? 'bg-violet-200 text-violet-950'
+                    : 'bg-sky-200 text-sky-950';
 
             return `
             <div draggable="true" data-pool-index="${r.index}"
@@ -216,6 +222,7 @@ async function importLoadingList(file) {
         description: findCol('description', 'deskripsi'),
         seal: findCol('seal', 'sealno', 'nomorseal'),
         size20: findCol('20', '20ft', '20feet'),
+        size21: findCol('21', '21ft', '21feet'),
         size40: findCol('40', '40ft', '40feet'),
         remarks: findCol('remarks', 'remark', 'keterangan')
     };
@@ -233,8 +240,10 @@ async function importLoadingList(file) {
         if (!isIsoContainerNo(number)) { ignoredNonContainer++; continue; }
 
         const val20 = col.size20 >= 0 ? Number(String(row[col.size20] ?? '').replace(',', '.')) : 0;
+        const val21 = col.size21 >= 0 ? Number(String(row[col.size21] ?? '').replace(',', '.')) : 0;
         const val40 = col.size40 >= 0 ? Number(String(row[col.size40] ?? '').replace(',', '.')) : 0;
-        const sizeFt = val40 > 0 ? 40 : val20 > 0 ? 20 : 0;
+        // Excel umumnya hanya punya kolom 20/40; kolom 21 FT dibaca bila tersedia.
+        const sizeFt = val40 > 0 ? 40 : val21 > 0 ? 21 : val20 > 0 ? 20 : 0;
         if (!sizeFt) { invalidSize++; continue; }
         if (seen.has(number)) continue;
         seen.add(number);

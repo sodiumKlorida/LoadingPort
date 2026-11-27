@@ -9,10 +9,22 @@
     <!-- Penguncian kertas cetak: preview tidak berantakan saat dialog browser
          default ke Letter atau margin yang lebih besar dari A4. -->
     <style>
-        @page { size: A4 portrait; margin: 8mm; }
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
         @media print {
-            html, body { background: #fff !important; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            html,
+            body {
+                background: #fff !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
     <!-- Orientasi cetak diubah oleh tombol Portrait/Landscape (ui-state.js). -->
@@ -21,10 +33,14 @@
 
 <body
     class="min-h-dvh overflow-x-hidden bg-slate-100 font-sans text-slate-900 antialiased selection:bg-sky-200 selection:text-sky-900 md:h-dvh md:overflow-hidden lg:h-dvh lg:overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:bg-white">
-        <!-- Tailwind print utility safelist: dipakai oleh print-layout.js saat membuat halaman cetak. -->
-    <div class="hidden print:block print:flex print:hidden print:w-full print:m-0 print:p-0 print:h-[285mm] print:max-h-[285mm] print:flex-col print:gap-[3mm] print:overflow-hidden print:break-after-page print:px-[2mm] print:py-[2mm] print:h-[13mm] print:min-h-[13mm] print:shrink-0 print:items-center print:justify-between print:border-b-2 print:border-slate-900 print:pb-[1mm] print:min-h-0 print:flex-1 print:rounded-lg print:shadow-none print:h-auto print:max-h-none print:min-w-0 print:break-inside-avoid print:border-slate-800 print:overflow-visible print:bg-white print:box-border print:h-[277mm] print:max-h-[277mm] print:gap-[2mm] print:px-[1mm] print:py-[1mm] print:h-[10mm] print:min-h-[10mm] print:max-h-[10mm] print:h-[126mm] print:min-h-[126mm] print:flex-none print:gap-[2mm] print:grid print:grid-cols-2 print:rounded print:border print:p-[1.5mm] print:px-[1mm] print:pb-[0.5mm] print:text-[8pt] print:font-extrabold print:tracking-widest print:shrink print:whitespace-normal print:break-all print:text-[6px] print:text-[7px] print:text-[8px] print:leading-[1.1] print:border-slate-400 print:h-[60mm] print:min-h-[60mm] print:max-h-[60mm] print:h-[8mm] print:min-h-[8mm] print:max-h-[8mm] print:text-[5px] print:text-[10px] print:min-h-[34px] print:px-0.5 print:py-0 print:gap-0.5 print:p-0.5 print:p-1 print:pb-0.5 print:content-start print:leading-none print:text-[6pt] print:grid-cols-[minmax(0,1fr)_60px] print:grid-cols-4 print:h-[78mm] print:min-h-[78mm] print:max-h-[78mm] print:text-[44px] relative absolute inset-0 z-50 z-10"></div>
+    <!-- Tailwind print utility safelist: dipakai oleh print-layout.js saat membuat halaman cetak. -->
+    <div
+        class="hidden print:block print:flex print:hidden print:w-full print:m-0 print:p-0 print:h-[285mm] print:max-h-[285mm] print:flex-col print:gap-[3mm] print:overflow-hidden print:break-after-page print:px-[2mm] print:py-[2mm] print:h-[13mm] print:min-h-[13mm] print:shrink-0 print:items-center print:justify-between print:border-b-2 print:border-slate-900 print:pb-[1mm] print:min-h-0 print:flex-1 print:rounded-lg print:shadow-none print:h-auto print:max-h-none print:min-w-0 print:break-inside-avoid print:border-slate-800 print:overflow-visible print:bg-white print:box-border print:h-[277mm] print:max-h-[277mm] print:gap-[2mm] print:px-[1mm] print:py-[1mm] print:h-[10mm] print:min-h-[10mm] print:max-h-[10mm] print:h-[126mm] print:min-h-[126mm] print:flex-none print:gap-[2mm] print:grid print:grid-cols-2 print:rounded print:border print:p-[1.5mm] print:px-[1mm] print:pb-[0.5mm] print:text-[8pt] print:font-extrabold print:tracking-widest print:shrink print:whitespace-normal print:break-all print:text-[6px] print:text-[7px] print:text-[8px] print:leading-[1.1] print:border-slate-400 print:h-[60mm] print:min-h-[60mm] print:max-h-[60mm] print:h-[8mm] print:min-h-[8mm] print:max-h-[8mm] print:text-[5px] print:text-[10px] print:min-h-[34px] print:px-0.5 print:py-0 print:gap-0.5 print:p-0.5 print:p-1 print:pb-0.5 print:content-start print:leading-none print:text-[6pt] print:grid-cols-[minmax(0,1fr)_60px] print:grid-cols-4 print:h-[78mm] print:min-h-[78mm] print:max-h-[78mm] print:text-[44px] relative absolute inset-0 z-50 z-10">
+    </div>
     <!-- Tailwind safelist untuk skeleton loading yang dibuat dari JS. -->
-    <div class="hidden min-w-[165px] basis-[220px] max-w-[240px] min-h-11 min-h-[300px] animate-pulse bg-slate-100 bg-slate-200 bg-white h-2.5 h-3 h-4 h-14 w-9 w-10 w-20 w-24 grid-cols-2 grid-cols-4 gap-2 gap-3 rounded rounded-lg rounded-xl rounded-2xl border-2 border-slate-200 p-2 p-3 shadow-sm text-xs font-black tracking-widest text-slate-300 uppercase"></div>
+    <div
+        class="hidden min-w-[165px] basis-[220px] max-w-[240px] min-h-11 min-h-[300px] animate-pulse bg-slate-100 bg-slate-200 bg-white h-2.5 h-3 h-4 h-14 w-9 w-10 w-20 w-24 grid-cols-2 grid-cols-4 gap-2 gap-3 rounded rounded-lg rounded-xl rounded-2xl border-2 border-slate-200 p-2 p-3 shadow-sm text-xs font-black tracking-widest text-slate-300 uppercase">
+    </div>
     <!-- Mobile Top Header (hanya < 768px) -->
     <header
         class="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-slate-900 px-4 py-3 text-white shadow-md md:hidden print:hidden">
@@ -47,13 +63,15 @@
     </header>
 
     <!-- Print-Only Header -->
-    <div id="printHeader"
-        class="hidden border-b-2 border-slate-900 px-3 py-2 print:hidden">
+    <div id="printHeader" class="hidden border-b-2 border-slate-900 px-3 py-2 print:hidden">
         <div>
-            <h1 class="text-base font-extrabold tracking-wide text-slate-900 print:text-[10px] print:leading-[1.3]">STOWAGE PLAN</h1>
-            <p id="printSubtitle" class="text-[11px] font-medium text-slate-600 print:text-[7px] print:leading-[1.3]">KM LOTUS PACIFIC</p>
+            <h1 class="text-base font-extrabold tracking-wide text-slate-900 print:text-[10px] print:leading-[1.3]">
+                STOWAGE PLAN</h1>
+            <p id="printSubtitle" class="text-[11px] font-medium text-slate-600 print:text-[7px] print:leading-[1.3]">KM
+                LOTUS PACIFIC</p>
         </div>
-        <div id="printSummaryLine" class="text-right text-[11px] font-semibold text-slate-700 print:text-[7px] print:leading-[1.3]"></div>
+        <div id="printSummaryLine"
+            class="text-right text-[11px] font-semibold text-slate-700 print:text-[7px] print:leading-[1.3]"></div>
     </div>
 
     <!-- Main App Shell: Left Sidebar + Right Workspace -->
@@ -144,6 +162,11 @@
                             <span class="block text-[11px] font-semibold text-sky-700">20 FT</span>
                             <strong id="m20" class="mt-0.5 block text-lg font-extrabold text-sky-900">0</strong>
                         </div>
+                        <!-- 21 ft: warna ungu agar berbeda dari 20 FT (biru) dan 40 FT (kuning) -->
+                        <div class="rounded-xl border border-violet-200 bg-violet-50 p-2.5">
+                            <span class="block text-[11px] font-semibold text-violet-700">21 FT</span>
+                            <strong id="m21" class="mt-0.5 block text-lg font-extrabold text-violet-900">0</strong>
+                        </div>
                         <div class="rounded-xl border border-amber-200 bg-amber-50 p-2.5">
                             <span class="block text-[11px] font-semibold text-amber-700">40 FT</span>
                             <strong id="m40" class="mt-0.5 block text-lg font-extrabold text-amber-900">0</strong>
@@ -185,6 +208,10 @@
                         <div class="flex items-center gap-2.5">
                             <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-sky-400 bg-sky-100"></span>
                             <span>Kontainer <strong>20 FT</strong> terisi</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-violet-400 bg-violet-100"></span>
+                            <span>Kontainer <strong>21 FT</strong> (input manual, 1 cell)</span>
                         </div>
                         <div class="flex items-center gap-2.5">
                             <span class="h-3.5 w-3.5 shrink-0 rounded-md border border-amber-400 bg-amber-100"></span>
@@ -256,7 +283,7 @@
             <section id="containerDock"
                 class="sticky top-0 z-[80] w-full min-w-0 shrink-0 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-md print:hidden">
                 <div class="flex justify-between mb-2">
-                    
+
                     <!-- <div
                     class="grid min-w-0 grid-cols-1 items-center gap-2 p-2 sm:grid-cols-[max-content_minmax(0,1fr)_minmax(120px,0.7fr)_minmax(130px,0.8fr)_40px] md:grid-cols-[max-content_minmax(140px,1fr)_minmax(120px,135px)_minmax(130px,150px)_40px] lg:grid-cols-[max-content_minmax(160px,1fr)_minmax(112px,135px)_minmax(130px,150px)_40px]"> -->
 
@@ -289,6 +316,7 @@
                             aria-label="Filter ukuran kontainer">
                             <option value="ALL">Semua ukuran</option>
                             <option value="20">20 FT</option>
+                            <option value="21">21 FT</option>
                             <option value="40">40 FT</option>
                         </select>
                         <select id="tonnageSort"
@@ -362,7 +390,8 @@
                 <button type="button" id="clearContentOnlyBtn"
                     class="rounded-xl bg-amber-500 px-4 py-3 text-left text-sm font-bold text-white transition hover:bg-amber-600 disabled:cursor-wait disabled:opacity-60">
                     Kosongkan Bay Content
-                    <span class="mt-0.5 block text-xs font-medium text-amber-50">Hapus seluruh posisi kontainer pada plan
+                    <span class="mt-0.5 block text-xs font-medium text-amber-50">Hapus seluruh posisi kontainer pada
+                        plan
                         aktif. Data master kontainer tetap tersimpan.</span>
                 </button>
                 <button type="button" id="clearImportedBtn"
@@ -468,6 +497,8 @@
                             <select id="fFeet" required
                                 class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-sky-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500/20">
                                 <option value="20 FT">20 FT</option>
+                                <!-- 21 FT hanya tersedia lewat input manual (tidak ada di Excel) -->
+                                <option value="21 FT">21 FT</option>
                                 <option value="40 FT">40 FT</option>
                             </select>
                         </div>

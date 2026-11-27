@@ -1,5 +1,19 @@
 const DB_CACHE_KEY = 'stowageApiTemporaryCache';
 
+// Ukuran yang dikenal aplikasi. 21 FT sengaja didukung karena tidak pernah
+// masuk dari import Excel, sehingga hanya bisa dibuat lewat input manual.
+const VALID_SIZE_LABELS = ['20 FT', '21 FT', '40 FT'];
+
+function normalizeSizeLabel(value) {
+    const ft = Number(String(value ?? '').match(/\d+/)?.[0] || 20);
+    const label = `${ft} FT`;
+    return VALID_SIZE_LABELS.includes(label) ? label : '20 FT';
+}
+
+function sizeFtFromLabel(value) {
+    return Number(normalizeSizeLabel(value).replace(/\D/g, ''));
+}
+
 let databaseRows = [];
 let selectedDatabaseRow = null;
 let activeBay = 13;
@@ -8,7 +22,7 @@ let programmaticScrollTimer = null;
 
 // Sidebar View & Filter State
 let sidebarViewMode = 'main'; // 'main' | 'containers'
-let sidebarSizeFilter = 'ALL'; // 'ALL' | '20' | '40'
+let sidebarSizeFilter = 'ALL'; // 'ALL' | '20' | '21' | '40'
 let sidebarTonnageSort = 'none'; // 'none' | 'asc' | 'desc'
 
 // Drag & Drop State (baik dari slot bay maupun dari list container sidebar)

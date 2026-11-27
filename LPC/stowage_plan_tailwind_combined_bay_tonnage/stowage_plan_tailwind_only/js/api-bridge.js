@@ -53,7 +53,7 @@
         method: 'POST',
         body: JSON.stringify({
           container_no: container.number,
-          size_ft: String(container.feet).includes('40') ? 40 : 20,
+          size_ft: sizeFtFromLabel(container.feet),
           container_type: container.type || 'DC',
           weight_ton: Number(String(container.weight || 0).replace(',', '.')),
           loading_port: container.loadingPort || null,
@@ -69,7 +69,7 @@
     async importContainers(containers) {
       const payload = containers.map((container) => ({
         container_no: container.number,
-        size_ft: String(container.feet).includes('40') ? 40 : 20,
+        size_ft: sizeFtFromLabel(container.feet),
         container_type: container.type || 'DC',
         weight_ton: Number(String(container.weight || 0).replace(',', '.')) || 0,
         loading_port: container.loadingPort || null,
@@ -133,7 +133,7 @@
   }
 
   function mapApiContainer(c) {
-    const size = Number(c.size_ft) === 40 ? '40 FT' : '20 FT';
+    const size = normalizeSizeLabel(c.size_ft ?? c.feet ?? c.size);
     return {
       id: Number(c.id),
       index: Number(c.id),
@@ -297,7 +297,7 @@
       slot: Number(p.slot),
       cellNo: String(p.cell_no || getCellNo(Number(p.bay), Number(p.slot))),
       number,
-      size: Number(c.size_ft || String(c.feet || '').replace(/\D/g, '')) === 40 ? '40 FT' : '20 FT',
+      size: normalizeSizeLabel(c.size_ft ?? c.feet ?? c.size),
       type: String(c.container_type || c.type || 'DC').toUpperCase(),
       dir40: p.dir40 || null,
       port: String(c.destination_port || c.destinationPort || c.port || ''),
@@ -397,7 +397,7 @@
       method: 'POST',
       body: JSON.stringify({
         container_no: record.number,
-        size_ft: record.size === '40 FT' ? 40 : 20,
+        size_ft: sizeFtFromLabel(record.size),
         container_type: record.type || 'DC',
         weight_ton: Number(record.weight || 0),
         loading_port: record.loadingPort || null,

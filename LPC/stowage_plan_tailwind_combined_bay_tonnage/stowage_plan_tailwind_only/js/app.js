@@ -148,7 +148,7 @@ $('bays').addEventListener('drop', (e) => {
             : {
                 id: null,
                 number: currentDrag.container.number,
-                size: currentDrag.container.feet.includes('40') ? '40 FT' : '20 FT',
+                size: normalizeSizeLabel(currentDrag.container.feet || currentDrag.container.size),
                 loadingPort: normalizePort(currentDrag.container.loadingPort || $('stowageLoadingPort')?.value || ''),
                 port: normalizePort(currentDrag.container.port || $('stowageDestinationPort')?.value || ''),
                 weight: currentDrag.container.weight,
@@ -250,7 +250,8 @@ $('bays').addEventListener('drop', (e) => {
             alert(`Kontainer ${c.number} sudah berada di ${bayLabel(duplicate.bay)} · ${getCellNo(duplicate.bay, duplicate.slot)}.`);
             return;
         }
-        const is40 = c.feet.includes('40');
+        const size = normalizeSizeLabel(c.feet || c.size);
+        const is40 = size === '40 FT';
         const newItem = {
             id: String(Date.now()) + '-' + Math.random().toString(16).slice(2),
             containerId: c.id || c.containerId || null,
@@ -258,7 +259,7 @@ $('bays').addEventListener('drop', (e) => {
             slot: targetSlot,
             cellNo: getCellNo(targetBay, targetSlot),
             number: String(c.number || '').trim().toUpperCase(),
-            size: is40 ? '40 FT' : '20 FT',
+            size,
             dir40: is40 ? evalRes.dir40 : null,
             port: normalizePort(c.port),
             loadingPort: normalizePort(c.loadingPort),

@@ -224,7 +224,7 @@ function selectDatabaseRecord() {
     const bay = $('fBay').value === 'AH' ? 'AH' : Number($('fBay').value);
     const slot = Number($('fSlot').value);
     const recordId = $('recordId').value || null;
-    const is40Ft = r.feet.includes('40');
+    const is40Ft = normalizeSizeLabel(r.feet || r.size) === '40 FT';
 
     if (is40Ft && !canLoad40Ft(bay, slot, recordId)) {
         alert('Kontainer 40 FT tidak dapat dimuat di sini (hanya Bay 01–11 dan cell pasangan depan/belakang harus kosong).');
@@ -237,7 +237,7 @@ function selectDatabaseRecord() {
 
     $('fWeight').value = r.weight;
     $('fType').value = r.type || 'DC';
-    $('fFeet').value = is40Ft ? '40 FT' : '20 FT';
+    $('fFeet').value = normalizeSizeLabel(r.feet || r.size);
     $('fType').value = r.type || 'DC';
 
     setSourceTabUI('man');
@@ -319,6 +319,20 @@ function submitContainer(e) {
         alert(`Kontainer ${number} sudah ditempatkan di ${bayLabel(duplicate.bay)} · ${getCellNo(duplicate.bay, duplicate.slot)}.`);
         return;
     }
+
+    // Ukuran posisi diambil dari master container di Laravel saat reload.
+    // Jika nomor sudah terdaftar dengan ukuran lain, input manual akan ditimpa.
+    const master = databaseRows.find(
+        (x) => String(x.number || '').trim().toUpperCase() === number
+    );
+    if (master && normalizeSizeLabel(master.feet || master.size) !== size) {
+        alert(
+            `Nomor ${number} sudah terdaftar di database sebagai ${normalizeSizeLabel(master.feet || master.size)}. ` +
+            `Ukuran ${size} tidak akan tersimpan setelah sinkronisasi. Gunakan nomor lain atau ubah data master di Laravel.`
+        );
+        return;
+    }
+
     const item = {
         id: id || String(Date.now()) + '-' + Math.random().toString(16).slice(2),
         containerId: old?.containerId || selectedDatabaseRow?.id || databaseRows.find((x) => String(x.number || '').trim().toUpperCase() === number)?.id || null,

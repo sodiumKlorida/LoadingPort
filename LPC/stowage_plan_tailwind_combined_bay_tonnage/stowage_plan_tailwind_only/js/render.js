@@ -49,6 +49,7 @@ function slotCardHTML(b, s, isDashed = false) {
     Boolean(activeContainer) && searchVal !== '' && !isSearchMatch;
 
   const is40 = hasRecord && r.size === '40 FT';
+  const is21 = hasRecord && r.size === '21 FT';
   const isDraggable = Boolean(activeContainer);
   const dragRecordId = activeContainer ? activeContainer.id : '';
 
@@ -57,7 +58,9 @@ function slotCardHTML(b, s, isDashed = false) {
     : hasRecord
       ? is40
         ? 'border-amber-400 bg-amber-50/90 hover:border-amber-500'
-        : 'border-sky-400 bg-sky-50/90 hover:border-sky-500'
+        : is21
+          ? 'border-violet-400 bg-violet-50/90 hover:border-violet-500'
+          : 'border-sky-400 bg-sky-50/90 hover:border-sky-500'
       : isBlocked
         ? 'border-dashed border-amber-400 bg-amber-50/55 hover:border-amber-500'
         : isDashed
@@ -74,7 +77,9 @@ function slotCardHTML(b, s, isDashed = false) {
     : hasRecord
       ? is40
         ? 'border-amber-200 bg-amber-100/80 text-amber-950'
-        : 'border-sky-200 bg-sky-100/80 text-sky-950'
+        : is21
+          ? 'border-violet-200 bg-violet-100/80 text-violet-950'
+          : 'border-sky-200 bg-sky-100/80 text-sky-950'
       : isBlocked
         ? 'border-amber-200/80 bg-amber-100/60 text-amber-900'
         : 'border-slate-200 bg-slate-100/80 text-slate-700';
@@ -84,7 +89,9 @@ function slotCardHTML(b, s, isDashed = false) {
     : hasRecord
       ? is40
         ? 'bg-amber-200 text-amber-950'
-        : 'bg-sky-200 text-sky-950'
+        : is21
+          ? 'bg-violet-200 text-violet-950'
+          : 'bg-sky-200 text-sky-950'
       : isBlocked
         ? 'bg-amber-200/80 text-amber-950'
         : 'bg-transparent text-transparent';
@@ -205,6 +212,7 @@ function renderBayCard(b) {
   const partner40List = records.filter((r) => r.size === '40 FT' && Number(getPartnerBayFor40Ft(r)) === Number(b));
   const total = getBayTotalWeight(b);
   const count20 = list.filter((r) => r.size === '20 FT').length;
+  const count21 = list.filter((r) => r.size === '21 FT').length;
   const count40 = list.filter((r) => r.size === '40 FT').length + partner40List.length;
   const occupiedSlots = getBayOccupiedSlotsCount(b);
   const title = bayLabel(b);
@@ -270,6 +278,9 @@ function renderBayCard(b) {
           <div class="flex items-center gap-1.5 text-[11px] print:gap-0.5 print:text-[5px]">
             <span class="whitespace-nowrap rounded-lg bg-sky-500/20 px-2 py-0.5 font-bold text-sky-300 print:rounded print:border print:border-slate-400 print:bg-transparent print:px-1 print:py-0 print:text-slate-800">
               20FT: ${count20}
+            </span>
+            <span class="whitespace-nowrap rounded-lg bg-violet-500/20 px-2 py-0.5 font-bold text-violet-300 print:rounded print:border print:border-slate-400 print:bg-transparent print:px-1 print:py-0 print:text-slate-800">
+              21FT: ${count21}
             </span>
             <span class="whitespace-nowrap rounded-lg bg-amber-500/20 px-2 py-0.5 font-bold text-amber-300 print:rounded print:border print:border-slate-400 print:bg-transparent print:px-1 print:py-0 print:text-slate-800">
               40FT: ${count40}
@@ -543,16 +554,18 @@ function goBay(b) {
 function updateSummary() {
   const totalCount = records.length;
   const count20 = records.filter((r) => r.size === '20 FT').length;
+  const count21 = records.filter((r) => r.size === '21 FT').length;
   const count40 = records.filter((r) => r.size === '40 FT').length;
   const totalMov = formatTon(records.reduce((a, r) => a + Number(r.weight || 0), 0));
 
   $('mTotal').textContent = totalCount;
   $('m20').textContent = count20;
+  $('m21').textContent = count21;
   $('m40').textContent = count40;
   $('mMov').textContent = totalMov;
 
   if ($('printSummaryLine')) {
-    $('printSummaryLine').textContent = `Total: ${totalCount} Unit (20FT: ${count20} | 40FT: ${count40}) · Total V.MOV: ${totalMov} TON`;
+    $('printSummaryLine').textContent = `Total: ${totalCount} Unit (20FT: ${count20} | 21FT: ${count21} | 40FT: ${count40}) · Total V.MOV: ${totalMov} TON`;
   }
 }
 
